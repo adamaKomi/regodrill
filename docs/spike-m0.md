@@ -66,8 +66,11 @@ over the 1,300 mutants.
      covered, yet removing the expression makes the rule match and the test fails. Line coverage cannot see
      this, so neither can the spec's §6 step 4 ("a mutant on a line that no test covers is `no_coverage`").
 3. **45 % of mutants are stillborn.** Removing an assignment (`msg := sprintf(...)`, `container := ...[_]`)
-   leaves a variable undefined. Each costs a compilation. Fix to try: don't remove an expression that binds
-   a variable used later in the body.
+   leaves a variable undefined. Each costs a compilation. Fixed: `EXPR_REMOVE` skips a declaration whose
+   variable the rest of the rule uses, unless another expression could bind it (a unification, a reference
+   key such as `annotations[name]`, an output argument). Stillborn mutants drop from 589 to 63 (8 %), with
+   no valid mutant lost and no verdict changed. The first version of the check ignored reference keys and
+   lost one valid, killed mutant in `seccomp`; the corpus comparison caught it.
 4. **Real gaps appear.** `general/allowedrepos` and `allowedreposv2`: the `ephemeralContainers` rule is
    covered by no test, so a broken check there would never be noticed. (The first measure also listed
    `initContainers`: that was the duplicate-name bug of finding 2. Its tests are named like the container
@@ -102,6 +105,5 @@ Spec to update: §6 steps 2, 4 and 5 (selection by rule reach, `no_coverage` def
 ## Next steps
 
 1. Manual review of a random sample of 50 survivors: real gap, debatable or equivalent (criterion 4).
-2. Skip predictable stillborn mutants (finding 3).
-3. Try the WASM build (`GOOS=wasip1`) and record size and speed.
-4. Unit tests for each operator: one killed and one surviving example.
+2. Try the WASM build (`GOOS=wasip1`) and record size and speed.
+3. Unit tests for each operator: one killed and one surviving example.

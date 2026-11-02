@@ -149,7 +149,8 @@ func (g *generator) compBoundary() {
 	})
 }
 
-// exprRemove: delete one expression of a rule body that has at least two.
+// exprRemove: delete one expression of a rule body that has at least two. An expression that declares a
+// variable the rest of the rule needs is kept: removing it could only produce a stillborn mutant.
 func (g *generator) exprRemove() {
 	g.eachRule(func(rule *ast.Rule) {
 		for r := rule; r != nil; r = r.Else {
@@ -157,7 +158,7 @@ func (g *generator) exprRemove() {
 				continue
 			}
 			for _, e := range r.Body {
-				if e.Location == nil || e.Location.File != g.file.Path {
+				if e.Location == nil || e.Location.File != g.file.Path || declaresUsedVar(r, e) {
 					continue
 				}
 				start := e.Location.Offset
@@ -171,6 +172,115 @@ func (g *generator) exprRemove() {
 			}
 		}
 	})
+}
+
+// declaresUsedVar reports whether removing e from the body of r leaves a variable unbound: e declares it
+// (`x := ...`, `[a, b] := ...`, `some x in ...`), the head or another expression uses it, and no other
+// expression could bind it instead. Such a mutant never compiles (rego_unsafe_var_error), so it is not
+// generated. The check is conservative: when in doubt, the mutant is kept and the compiler decides.
+func declaresUsedVar(r *ast.Rule, e *ast.Expr) bool {
+	declared := declaredVars(e)
+	if len(declared) == 0 {
+		return false
+	}
+	used, bindable := ast.NewVarSet(), ast.NewVarSet()
+	ast.WalkVars(r.Head, func(v ast.Var) bool {
+		used.Add(v)
+		return false
+	})
+	for _, other := range r.Body {
+		if other == e {
+			continue
+		}
+		ast.WalkVars(other, func(v ast.Var) bool {
+			used.Add(v)
+			return false
+		})
+		bindingVars(other, bindable)
+	}
+	for v := range declared {
+		if used.Contains(v) && !bindable.Contains(v) {
+			return true
+		}
+	}
+	return false
+}
+
+// bindingVars adds to out the variables that e could bind on its own: operands of a unification (`x = y`),
+// keys of a reference (`input.items[x]`, which iterates), and the last argument of a call that may be an
+// output argument (`count(xs, n)`, or any user function with two arguments or more).
+func bindingVars(e *ast.Expr, out ast.VarSet) {
+	addVars := func(x any) {
+		ast.WalkVars(x, func(v ast.Var) bool {
+			out.Add(v)
+			return false
+		})
+	}
+	if e.IsEquality() {
+		for _, t := range e.Operands() {
+			addVars(t)
+		}
+	}
+	ast.WalkRefs(e, func(ref ast.Ref) bool {
+		for _, t := range ref[1:] {
+			addVars(t)
+		}
+		return false
+	})
+	visitCall := func(op ast.Ref, args []*ast.Term) {
+		if len(args) == 0 {
+			return
+		}
+		if b, ok := ast.BuiltinMap[op.String()]; ok {
+			if len(args) <= len(b.Decl.FuncArgs().Args) {
+				return
+			}
+		} else if len(args) < 2 {
+			return
+		}
+		addVars(args[len(args)-1])
+	}
+	if e.IsCall() {
+		visitCall(e.Operator(), e.Operands())
+	}
+	ast.WalkTerms(e, func(t *ast.Term) bool {
+		if c, ok := t.Value.(ast.Call); ok {
+			if op, ok := c[0].Value.(ast.Ref); ok {
+				visitCall(op, c[1:])
+			}
+		}
+		return false
+	})
+}
+
+// declaredVars returns the variables that e declares, without wildcards and generated variables.
+func declaredVars(e *ast.Expr) ast.VarSet {
+	vars := ast.NewVarSet()
+	add := func(x any) {
+		ast.WalkVars(x, func(v ast.Var) bool {
+			if !v.IsWildcard() && !v.IsGenerated() {
+				vars.Add(v)
+			}
+			return false
+		})
+	}
+	switch {
+	case e.IsAssignment():
+		add(e.Operand(0))
+	case e.IsSome():
+		decl := e.Terms.(*ast.SomeDecl)
+		for _, sym := range decl.Symbols {
+			// `some k, v in xs` is the call member_3(k, v, xs): every operand but the collection is declared.
+			// A plain `some x` only declares x for the body; without it x is still an iteration variable, so
+			// removing it compiles: it is not counted.
+			if call, ok := sym.Value.(ast.Call); ok && len(call) > 2 {
+				for _, t := range call[1 : len(call)-1] {
+					add(t)
+				}
+			}
+		}
+	}
+	return vars
 }
 
 // defaultFlip: default x := true ↔ false.

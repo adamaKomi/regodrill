@@ -2,5 +2,4 @@ exit 0
 policy.rego:5:2 EXPR_REMOVE data.refheads.checks.labels.present "input.labels.owner" -> "" killed by data.refheads_test.test_missing_owner
 policy.rego:6:2 EXPR_REMOVE data.refheads.checks.labels.present "input.labels.team" -> "" survived
 policy.rego:9:38 COMP_BOUNDARY data.refheads.checks.replicas.ok "<=" -> "<" killed by data.refheads_test.test_all_checks_pass
-policy.rego:13:2 EXPR_REMOVE data.refheads.roles "some name, role in input.users" -> "" stillborn: 1 error occurred: policy.rego:12: rego_unsafe_var_error: var name is unsafe
 policy.rego:14:2 EXPR_REMOVE data.refheads.roles "role != \"none\"" -> "" killed by data.refheads_test.test_none_role_dropped

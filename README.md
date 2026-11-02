@@ -125,7 +125,7 @@ score = (killed + timeout) / (killed + timeout + survived + no_coverage) × 100
 | ID | Mutation | Bug it simulates |
 |---|---|---|
 | `COMP_BOUNDARY` | `>=`↔`>`, `<=`↔`<` | Off-by-one on a limit (age, level, quota) |
-| `EXPR_REMOVE` | Delete one expression of a rule body that has at least two | A forgotten condition |
+| `EXPR_REMOVE` | Delete one expression of a rule body that has at least two. A declaration (`x :=`, `some x in`) whose variable the rule still needs is skipped: that mutant could not compile | A forgotten condition |
 | `DEFAULT_FLIP` | `default x := false` ↔ `true` | A fail-open policy |
 
 Eight more operators are specified (comparison negation, `not` toggle, rule removal, string and number
