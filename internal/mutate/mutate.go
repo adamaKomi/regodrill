@@ -32,6 +32,10 @@ type Mutant struct {
 	End         int    `json:"-"`
 	Original    string `json:"original"`
 	Replacement string `json:"replacement"`
+	// Rule is the path of the enclosing rule (package and ground prefix of the head), e.g. data.pkg.allow.
+	// Every definition of the same rule, including its default and else branches, shares this path.
+	Rule    string  `json:"rule"`
+	RuleRef ast.Ref `json:"-"`
 }
 
 // Apply returns the source of file with the mutation applied.
@@ -74,7 +78,17 @@ func Generate(p *project.Project, enabled map[string]bool) []*Mutant {
 type generator struct {
 	file    *project.File
 	enabled map[string]bool
+	rule    ast.Ref // path of the rule being visited
 	mutants []*Mutant
+}
+
+// eachRule calls fn for every rule of the file, with g.rule set to its path.
+func (g *generator) eachRule(fn func(*ast.Rule)) {
+	for _, rule := range g.file.Module.Rules {
+		g.rule = rule.Path()
+		fn(rule)
+	}
+	g.rule = nil
 }
 
 func (g *generator) add(op string, start, end int, replacement string) {
@@ -85,6 +99,7 @@ func (g *generator) add(op string, start, end int, replacement string) {
 	g.mutants = append(g.mutants, &Mutant{
 		Operator: op, File: g.file.Path, Line: line, Column: col,
 		Start: start, End: end, Original: g.file.Source[start:end], Replacement: replacement,
+		Rule: g.rule.String(), RuleRef: g.rule,
 	})
 }
 
@@ -116,25 +131,27 @@ func (g *generator) compBoundary() {
 		}
 		g.add(CompBoundary, from+i, from+i+len(syms[0]), syms[1])
 	}
-	ast.WalkExprs(g.file.Module, func(e *ast.Expr) bool {
-		if e.IsCall() && len(e.Operands()) == 2 {
-			visit(e.Operator(), e.Operand(0), e.Operand(1))
-		}
-		return false
-	})
-	ast.WalkTerms(g.file.Module, func(t *ast.Term) bool {
-		if c, ok := t.Value.(ast.Call); ok && len(c) == 3 {
-			if r, ok := c[0].Value.(ast.Ref); ok {
-				visit(r, c[1], c[2])
+	g.eachRule(func(rule *ast.Rule) {
+		ast.WalkExprs(rule, func(e *ast.Expr) bool {
+			if e.IsCall() && len(e.Operands()) == 2 {
+				visit(e.Operator(), e.Operand(0), e.Operand(1))
 			}
-		}
-		return false
+			return false
+		})
+		ast.WalkTerms(rule, func(t *ast.Term) bool {
+			if c, ok := t.Value.(ast.Call); ok && len(c) == 3 {
+				if r, ok := c[0].Value.(ast.Ref); ok {
+					visit(r, c[1], c[2])
+				}
+			}
+			return false
+		})
 	})
 }
 
 // exprRemove: delete one expression of a rule body that has at least two.
 func (g *generator) exprRemove() {
-	for _, rule := range g.file.Module.Rules {
+	g.eachRule(func(rule *ast.Rule) {
 		for r := rule; r != nil; r = r.Else {
 			if len(r.Body) < 2 {
 				continue
@@ -153,22 +170,22 @@ func (g *generator) exprRemove() {
 				g.add(ExprRemove, start, end, "")
 			}
 		}
-	}
+	})
 }
 
 // defaultFlip: default x := true ↔ false.
 func (g *generator) defaultFlip() {
-	for _, rule := range g.file.Module.Rules {
+	g.eachRule(func(rule *ast.Rule) {
 		if !rule.Default || rule.Head.Value == nil || rule.Head.Value.Location == nil {
-			continue
+			return
 		}
 		b, ok := rule.Head.Value.Value.(ast.Boolean)
 		if !ok {
-			continue
+			return
 		}
 		loc := rule.Head.Value.Location
 		g.add(DefaultFlip, loc.Offset, loc.Offset+len(loc.Text), fmt.Sprint(!bool(b)))
-	}
+	})
 }
 
 // position converts a byte offset to a 1-based line and column.
