@@ -72,10 +72,12 @@ func Load(paths []string, version ast.RegoVersion) (*Project, error) {
 		return nil, inv
 	}
 	p := &Project{RegoVersion: version, Store: inmem.NewFromObject(res.Documents)}
-	for name, f := range res.Modules {
+	for _, f := range res.Modules {
+		// f.Name is the path as given, which the parsed locations use. The map key is not: the loader drops
+		// the leading "/" of an absolute path there.
 		p.Files = append(p.Files, &File{
-			Path: name, Source: string(f.Raw), Module: f.Parsed,
-			IsTest: strings.HasSuffix(name, "_test.rego") || hasTests(f.Parsed),
+			Path: f.Name, Source: string(f.Raw), Module: f.Parsed,
+			IsTest: strings.HasSuffix(f.Name, "_test.rego") || hasTests(f.Parsed),
 		})
 	}
 	if len(p.Files) == 0 {

@@ -62,6 +62,7 @@ them.
 | `test-helpers-file` | A `_test.rego` file without `test_` rules (fixtures, helpers) is not mutated |
 | `data-files` | `data.json` and `data.yaml` are loaded like `opa test` does, rooted at their directory |
 | `multiple-roots` | Policies and tests given as two paths; files outside them are not loaded |
+| `absolute-path` | An absolute path gives the same mutants as a relative one (editors and CI pass absolute paths) |
 
 ### Errors
 

@@ -1,0 +1,2 @@
+# Editors and CI scripts pass absolute paths. The result must be the same as with a relative path.
+abs:.
