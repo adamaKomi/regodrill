@@ -1,0 +1,4 @@
+exit 0
+policy.rego:4:26 COMP_BOUNDARY data.datafiles.ok "<=" -> "<" killed by data.datafiles_test.test_at_limit
+policy.rego:7:2 EXPR_REMOVE data.datafiles.trusted "some r in data.registries.trusted" -> "" stillborn: 1 error occurred: policy.rego:8: rego_unsafe_var_error: var r is unsafe
+policy.rego:8:2 EXPR_REMOVE data.datafiles.trusted "startswith(input.image, r)" -> "" killed by data.datafiles_test.test_untrusted

@@ -1,0 +1,4 @@
+exit 0
+policy.rego:6:2 EXPR_REMOVE data.unicode.greeting "input.n >= 3" -> "" killed by data.unicode_test.test_no_greeting
+policy.rego:6:10 COMP_BOUNDARY data.unicode.greeting ">=" -> ">" killed by data.unicode_test.test_greeting
+policy.rego:7:2 EXPR_REMOVE data.unicode.greeting "not input.mark == \"✗\"" -> "" survived

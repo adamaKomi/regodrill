@@ -1,0 +1,4 @@
+exit 2
+stderr: error: 1 error occurred during loading: policy.rego:5: rego_parse_error: unexpected } token
+stderr: 	}
+stderr: 	^

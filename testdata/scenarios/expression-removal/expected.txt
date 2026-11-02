@@ -1,0 +1,5 @@
+exit 0
+policy.rego:4:2 EXPR_REMOVE data.removal.allow "input.user.active" -> "" killed by data.removal_test.test_inactive_denied
+policy.rego:5:2 EXPR_REMOVE data.removal.allow "input.user.age >= 18" -> "" survived
+policy.rego:5:17 COMP_BOUNDARY data.removal.allow ">=" -> ">" survived
+policy.rego:6:2 EXPR_REMOVE data.removal.allow "not input.user.banned" -> "" killed by data.removal_test.test_banned_denied

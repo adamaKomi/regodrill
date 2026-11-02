@@ -1,0 +1,2 @@
+exit 2
+stderr: error: 1 error occurred during loading: data.json: invalid character '}' looking for beginning of object key string

@@ -1,0 +1,3 @@
+exit 0
+policy.rego:4:18 DEFAULT_FLIP data.defaults.allow "false" -> "true" killed by data.defaults_test.test_guest_denied
+policy.rego:9:17 DEFAULT_FLIP data.defaults.deny "true" -> "false" no_coverage

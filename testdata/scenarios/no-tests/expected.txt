@@ -1,0 +1,2 @@
+exit 2
+stderr: error: no test found: mutation testing needs tests that pass on the unmodified policy

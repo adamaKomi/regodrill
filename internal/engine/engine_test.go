@@ -25,7 +25,7 @@ func baseline(t *testing.T, dir string) (*project.Project, *Baseline) {
 }
 
 func TestBaselineNamesDuplicateTestsLikeTheRunner(t *testing.T) {
-	_, b := baseline(t, "../../testdata/selection")
+	_, b := baseline(t, "../../testdata/scenarios/indexed-rule-and-duplicate-tests")
 	want := []string{
 		"data.svc_test.test_allowed",
 		"data.svc_test.test_load_balancer_denied",
@@ -43,9 +43,9 @@ func TestBaselineNamesDuplicateTestsLikeTheRunner(t *testing.T) {
 }
 
 func TestBaselineCoverageAndReach(t *testing.T) {
-	_, b := baseline(t, "../../testdata/selection")
+	_, b := baseline(t, "../../testdata/scenarios/indexed-rule-and-duplicate-tests")
 	// Line 7 (input.type == "LoadBalancer") is evaluated only when the indexed input matches.
-	if got, want := b.CoveringTests("../../testdata/selection/policy.rego", 7), []string{"data.svc_test.test_load_balancer_denied"}; !slices.Equal(got, want) {
+	if got, want := b.CoveringTests("../../testdata/scenarios/indexed-rule-and-duplicate-tests/policy.rego", 7), []string{"data.svc_test.test_load_balancer_denied"}; !slices.Equal(got, want) {
 		t.Errorf("covering tests of line 7 = %q, want %q", got, want)
 	}
 	// All three tests look the rule up.
@@ -63,7 +63,7 @@ func TestBaselineCoverageAndReach(t *testing.T) {
 
 // Selection must give the same verdicts as running every test (docs/spike-m0.md, finding 2).
 func TestSelectionIsSound(t *testing.T) {
-	p, b := baseline(t, "../../testdata/selection")
+	p, b := baseline(t, "../../testdata/scenarios/indexed-rule-and-duplicate-tests")
 	mutants := mutate.Generate(p, map[string]bool{mutate.ExprRemove: true})
 	selected := Run(context.Background(), p, b, mutants, Options{Parallel: 2, Select: true, TimeoutFactor: 5})
 	all := Run(context.Background(), p, b, mutants, Options{Parallel: 2, Select: false, TimeoutFactor: 5})

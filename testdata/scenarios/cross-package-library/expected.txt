@@ -1,0 +1,3 @@
+exit 0
+lib/text.rego:5:2 EXPR_REMOVE data.lib.text.has_prefix "some p in prefixes" -> "" stillborn: 1 error occurred: lib/text.rego:6: rego_unsafe_var_error: var p is unsafe
+lib/text.rego:6:2 EXPR_REMOVE data.lib.text.has_prefix "startswith(s, p)" -> "" killed by data.main_test.test_other_registry_denied

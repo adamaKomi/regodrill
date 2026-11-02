@@ -1,0 +1,2 @@
+exit 2
+stderr: error: baseline tests failed: data.failing_test.test_wrong

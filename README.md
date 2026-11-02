@@ -88,8 +88,10 @@ $ ./bin/regodrill run path/to/policies
 regodrill run [flags] [paths...]
 ```
 
-`paths` are directories or files (default: the current directory). Every `.rego` file found is loaded. Files
-that define `test_` rules are test files: they are run, never mutated.
+`paths` are directories or files (default: the current directory), loaded like `opa test` does: `.rego`
+files, and JSON or YAML data files (`data.json`, `data.yaml`) rooted at their directory. Test files are the
+files whose name ends with `_test.rego` or that define `test_` rules: they are run, never mutated. That
+includes fixtures and helpers kept next to the tests.
 
 | Flag | Default | Effect |
 |---|---|---|
@@ -97,10 +99,12 @@ that define `test_` rules are test files: they are run, never mutated.
 | `--parallel N` | number of CPUs | Mutants evaluated in parallel |
 | `--v0-compatible` | off | Parse policies as Rego v0 (syntax before OPA 1.0, used by gatekeeper-library) |
 | `--operators A,B` | all | Operators to enable |
-| `--no-select` | off | Run every test for every mutant, instead of only the tests that cover the mutated line |
+| `--no-select` | off | Run every test for every mutant, instead of only the tests that look up the mutated rule. The verdicts are the same; it is only slower |
 | `--timeout-factor F` | `5` | A mutant times out after F × the baseline duration of its tests (minimum 2 s) |
 
-Exit codes: `0` run completed, `1` usage or load error, `2` the unmodified tests do not all pass.
+Exit codes: `0` run completed; `1` usage error (unknown flag, missing path); `2` the baseline cannot run: a
+test fails on the unmodified policy, a file does not parse or load, or there is no test. A Rego v0 policy
+loaded without `--v0-compatible` gets a hint.
 
 ### Statuses and score
 
@@ -109,7 +113,7 @@ Exit codes: `0` run completed, `1` usage or load error, `2` the unmodified tests
 | `killed` | At least one test fails or errors | Yes (good) |
 | `timeout` | The tests took too long, for example an infinite loop introduced by the mutation | Yes, counts as killed |
 | `survived` | Every test still passes | Yes (bad) |
-| `no_coverage` | No test evaluates the mutated line, so no test can kill it | Yes (bad) |
+| `no_coverage` | Every test still passes, and none of them evaluates the mutated line | Yes (bad) |
 | `stillborn` | The mutant doesn't compile, for example a removed assignment leaves a variable undefined | No |
 
 ```
@@ -126,7 +130,7 @@ score = (killed + timeout) / (killed + timeout + survived + no_coverage) × 100
 
 Eight more operators are specified (comparison negation, `not` toggle, rule removal, string and number
 constants, collection elements, `every` weakened to `some`, `and`↔`or`). See the
-[specification](https://github.com/adamaKomi/rego-syntax-support/blob/main/docs/mutation-testing-spec.md#5-mutation-operators-mvp).
+[specification](https://github.com/adamaKomi/rego-lens/blob/main/docs/mutation-testing-spec.md#5-mutation-operators-mvp).
 
 ### JSON report
 
@@ -140,15 +144,16 @@ Spike run of 2026-11-02 on [gatekeeper-library](https://github.com/open-policy-a
 `a8d4799`: 51 policy directories, 1,003 tests, 1,300 mutants (`COMP_BOUNDARY` and `EXPR_REMOVE`).
 
 - Every mutant patched the source exactly as intended (1,300 out of 1,300).
-- The whole library runs in about 30 seconds on a laptop, 4 workers per directory.
-- Real gaps show up. For example, `allowedrepos` never tests that an `initContainer` or an
-  `ephemeralContainer` from a forbidden repository is denied: those two rules are not covered by any test.
+- The whole library runs in about 25 seconds on a laptop, 4 workers per directory.
+- Real gaps show up. For example, `allowedrepos` never tests that an `ephemeralContainer` from a forbidden
+  repository is denied: that rule is not covered by any test. The exemption library copied into about
+  fifteen templates never tests a wildcard exemption.
 
 Details, limits and next steps: [docs/spike-m0.md](docs/spike-m0.md).
 
 ## Roadmap
 
-The full design is in the [specification](https://github.com/adamaKomi/rego-syntax-support/blob/main/docs/mutation-testing-spec.md)
+The full design is in the [specification](https://github.com/adamaKomi/rego-lens/blob/main/docs/mutation-testing-spec.md)
 (kept in the Rego Lens repository for now).
 
 | Milestone | Content |
@@ -166,17 +171,22 @@ gate a CI pipeline.
 
 ```console
 $ go vet ./...
+$ go test -race ./...      # unit tests and the scenario catalog
 $ go build -o bin/regodrill ./cmd/regodrill
 $ ./bin/regodrill run testdata/authz
 ```
 
+Every behavior change comes with a scenario in `testdata/scenarios`: a small policy, its tests, and the
+expected verdict of each mutant. Each scenario runs with and without test selection, and both must agree.
+
 | Path | Content |
 |---|---|
 | `cmd/regodrill` | Command line, reports |
-| `internal/project` | Loading and parsing the `.rego` files |
+| `internal/project` | Loading policies, tests and data with OPA's loader |
 | `internal/mutate` | Operators: from the parsed AST to text patches on the original source |
-| `internal/engine` | Baseline run, per-test coverage, parallel evaluation of mutants |
+| `internal/engine` | Baseline run with per-test tracing, test selection, parallel evaluation of mutants |
 | `testdata/authz` | Small policy with two deliberate test gaps |
+| `testdata/scenarios` | End-to-end scenario catalog with expected verdicts ([README](testdata/scenarios/README.md)) |
 
 ## License
 

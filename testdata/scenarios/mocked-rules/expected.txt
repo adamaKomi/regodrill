@@ -1,0 +1,5 @@
+exit 0
+policy.rego:4:2 EXPR_REMOVE data.mocks.allow "user_ok" -> "" survived
+policy.rego:5:2 EXPR_REMOVE data.mocks.allow "input.action == \"read\"" -> "" killed by data.mocks_test.test_write_denied
+policy.rego:10:2 EXPR_REMOVE data.mocks.user_ok "input.user.active" -> "" no_coverage
+policy.rego:11:2 EXPR_REMOVE data.mocks.user_ok "input.user.verified" -> "" no_coverage
