@@ -13,9 +13,11 @@ at least 50 % of the surviving mutants should be real test gaps.
     added.
   - **Debatable**: the mutation changes behavior, but only in a way that the deployment already prevents
     (Gatekeeper's `match` filters the kind), or only the wording of a message.
-  - **Equivalent**: no input changes the result. Most of these are type guards before a built-in that
-    would fail anyway: OPA turns built-in errors into an undefined result, so removing the guard changes
-    nothing.
+  - **Equivalent**: no input that the Kubernetes API accepts changes the result. Most of these are type
+    guards before a built-in that would fail anyway: OPA turns built-in errors into an undefined result, so
+    removing the guard changes nothing. Some are not equivalent for arbitrary JSON (an empty array passes
+    `count(x) == 0` where a string was expected), so skipping them automatically could hide real gaps in
+    other policies; the M1 operator rules must be narrower than "never remove a type guard".
 - First pass by the author's assistant; the verdicts marked as uncertain need a second look.
 
 ## Result
