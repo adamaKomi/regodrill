@@ -1,7 +1,7 @@
 # Spike M0: first measures
 
 Date: 2026-11-02. Specification: §14 of
-[mutation-testing-spec.md](https://github.com/adamaKomi/rego-syntax-support/blob/main/docs/mutation-testing-spec.md#14-spike-before-committing-to-the-mvp).
+[mutation-testing-spec.md](https://github.com/adamaKomi/rego-lens/blob/main/docs/mutation-testing-spec.md#14-spike-before-committing-to-the-mvp).
 
 ## Setup
 
@@ -90,8 +90,12 @@ over the 1,300 mutants.
 - **Single-pass coverage.** The baseline is one run with a tracer that starts a new record at each test's
   root query (parallelism 1, so tests don't interleave). No more per-test runs, and no `*cover.Cover`, which
   made the runner add two supplementary passes per test (indexing and early exit disabled).
-- Regression tests: `internal/engine/engine_test.go` with `testdata/selection` (a duplicate test name and an
-  indexed rule).
+- Regression tests: `internal/engine/engine_test.go` and the scenario
+  `testdata/scenarios/indexed-rule-and-duplicate-tests` (a duplicate test name and an indexed rule).
+- Scenario catalog (`testdata/scenarios`): 25 end-to-end runs with expected verdicts, each checked with and
+  without selection. Writing it found four more bugs, now fixed: data files were not loaded, `_test.rego`
+  helper files were mutated, parse errors exited with 1 instead of 2, and a run without tests reported
+  success.
 
 Spec to update: §6 steps 2, 4 and 5 (selection by rule reach, `no_coverage` definition).
 

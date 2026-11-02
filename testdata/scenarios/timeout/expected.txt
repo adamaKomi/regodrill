@@ -1,0 +1,6 @@
+exit 0
+policy.rego:3:17 DEFAULT_FLIP data.slow.safe "false" -> "true" killed by data.slow_test.test_huge
+policy.rego:6:2 EXPR_REMOVE data.slow.safe "input.n <= 10" -> "" timeout
+policy.rego:6:10 COMP_BOUNDARY data.slow.safe "<=" -> "<" killed by data.slow_test.test_ten
+policy.rego:7:2 EXPR_REMOVE data.slow.safe "count([1 | some _ in numbers.range(1, input.n);..." -> "" survived
+policy.rego:7:88 COMP_BOUNDARY data.slow.safe ">" -> ">=" survived

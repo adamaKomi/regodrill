@@ -1,15 +1,18 @@
-// Package project loads the Rego files of a policy directory.
+// Package project loads the policies, tests and data of a run, like `opa test` does.
 package project
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 
 	"github.com/open-policy-agent/opa/v1/ast"
+	"github.com/open-policy-agent/opa/v1/loader"
+	"github.com/open-policy-agent/opa/v1/storage"
+	"github.com/open-policy-agent/opa/v1/storage/inmem"
 )
 
 // File is one parsed Rego file.
@@ -17,43 +20,63 @@ type File struct {
 	Path   string
 	Source string
 	Module *ast.Module
-	// IsTest is true when the file defines at least one test_ rule. Test files are never mutated.
+	// IsTest is true for a test file: its name ends with _test.rego, or it defines a test_ rule. Test files
+	// are never mutated, so fixtures and helpers next to the tests are left alone.
 	IsTest bool
 }
 
-// Project is the set of Rego files evaluated together.
+// Project is the set of Rego files and data documents evaluated together.
 type Project struct {
 	Files       []*File
 	RegoVersion ast.RegoVersion
+	// Store holds the data documents (data.json, data.yaml and other JSON or YAML files under the paths).
+	// Test runs only read it, so one store is shared by all of them.
+	Store storage.Store
 }
 
-// Load parses every .rego file under paths.
+// InvalidError means the files under the paths could not be loaded: a Rego file does not parse, or a data
+// file is not valid. The policy cannot be tested as it is, so this is a baseline failure, not a usage error.
+type InvalidError struct {
+	Err error
+	// ParsesAsV0 is set when the Rego files fail to parse as Rego v1 but parse as Rego v0.
+	ParsesAsV0 bool
+}
+
+func (e *InvalidError) Error() string {
+	msg := e.Err.Error()
+	if e.ParsesAsV0 {
+		msg += "\nhint: the policies parse as Rego v0; run with --v0-compatible"
+	}
+	return msg
+}
+
+func (e *InvalidError) Unwrap() error { return e.Err }
+
+// Load loads the Rego files and data files under paths with the loader that `opa test` uses. A path that
+// does not exist is reported as a plain error (a usage error), and invalid files as an *InvalidError.
 func Load(paths []string, version ast.RegoVersion) (*Project, error) {
-	p := &Project{RegoVersion: version}
-	seen := map[string]bool{}
-	for _, root := range paths {
-		err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
-			if d.IsDir() || filepath.Ext(path) != ".rego" || seen[path] {
-				return nil
-			}
-			seen[path] = true
-			src, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-			mod, err := p.Parse(path, string(src))
-			if err != nil {
-				return err
-			}
-			p.Files = append(p.Files, &File{Path: path, Source: string(src), Module: mod, IsTest: hasTests(mod)})
-			return nil
-		})
-		if err != nil {
+	for _, path := range paths {
+		if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
+			return nil, fmt.Errorf("%s: no such file or directory", path)
+		} else if err != nil {
 			return nil, err
 		}
+	}
+	res, err := load(paths, version)
+	if err != nil {
+		inv := &InvalidError{Err: err}
+		if version != ast.RegoV0 && hasParseError(err) {
+			_, errV0 := load(paths, ast.RegoV0)
+			inv.ParsesAsV0 = errV0 == nil
+		}
+		return nil, inv
+	}
+	p := &Project{RegoVersion: version, Store: inmem.NewFromObject(res.Documents)}
+	for name, f := range res.Modules {
+		p.Files = append(p.Files, &File{
+			Path: name, Source: string(f.Raw), Module: f.Parsed,
+			IsTest: strings.HasSuffix(name, "_test.rego") || hasTests(f.Parsed),
+		})
 	}
 	if len(p.Files) == 0 {
 		return nil, fmt.Errorf("no .rego file found in %s", strings.Join(paths, ", "))
@@ -62,7 +85,27 @@ func Load(paths []string, version ast.RegoVersion) (*Project, error) {
 	return p, nil
 }
 
-// Parse parses one module with the project's Rego version.
+func load(paths []string, version ast.RegoVersion) (*loader.Result, error) {
+	return loader.NewFileLoader().
+		WithRegoVersion(version).
+		WithProcessAnnotation(true).
+		Filtered(paths, nil)
+}
+
+func hasParseError(err error) bool {
+	errs, ok := err.(loader.Errors)
+	if !ok {
+		return false
+	}
+	for _, e := range errs {
+		if ae, ok := e.(*ast.Error); ok && ae.Code == ast.ParseErr {
+			return true
+		}
+	}
+	return false
+}
+
+// Parse parses one module with the project's Rego version and the loader's options.
 func (p *Project) Parse(path, src string) (*ast.Module, error) {
 	return ast.ParseModuleWithOpts(path, src, ast.ParserOptions{RegoVersion: p.RegoVersion, ProcessAnnotation: true})
 }

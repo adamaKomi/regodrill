@@ -1,0 +1,4 @@
+exit 0
+policy.rego:6:2 EXPR_REMOVE data.svc.deny "input.kind == \"Service\"" -> "" killed by data.svc_test["test_allowed#01"]
+policy.rego:7:2 EXPR_REMOVE data.svc.deny "input.type == \"LoadBalancer\"" -> "" killed by data.svc_test.test_allowed
+policy.rego:8:2 EXPR_REMOVE data.svc.deny "msg := \"load balancers are not allowed\"" -> "" stillborn: 1 error occurred: policy.rego:5: rego_unsafe_var_error: var msg is unsafe

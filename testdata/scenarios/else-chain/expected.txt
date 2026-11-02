@@ -1,0 +1,5 @@
+exit 0
+policy.rego:4:2 EXPR_REMOVE data.elsechain.level "input.role == \"admin\"" -> "" survived
+policy.rego:5:2 EXPR_REMOVE data.elsechain.level "input.mfa" -> "" killed by data.elsechain_test.test_admin_without_mfa
+policy.rego:7:2 EXPR_REMOVE data.elsechain.level "input.role == \"user\"" -> "" survived
+policy.rego:8:2 EXPR_REMOVE data.elsechain.level "input.verified" -> "" killed by data.elsechain_test.test_unverified_user

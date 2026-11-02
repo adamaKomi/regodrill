@@ -1,0 +1,2 @@
+# This fixture checks CRLF line endings: never normalize it.
+testdata/scenarios/line-endings-and-unicode/policy.rego -text

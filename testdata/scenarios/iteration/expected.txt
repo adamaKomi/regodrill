@@ -1,0 +1,5 @@
+exit 0
+policy.rego:6:9 COMP_BOUNDARY data.iteration.all_adults ">=" -> ">" killed by data.iteration_test.test_all_adults_at_18
+policy.rego:11:55 COMP_BOUNDARY data.iteration.adult_names ">=" -> ">" killed by data.iteration_test.test_adult_names
+policy.rego:14:2 EXPR_REMOVE data.iteration.any_admin "some u in input.users" -> "" stillborn: 1 error occurred: policy.rego:15: rego_unsafe_var_error: var u is unsafe
+policy.rego:15:2 EXPR_REMOVE data.iteration.any_admin "u.role == \"admin\"" -> "" killed by data.iteration_test.test_no_admin

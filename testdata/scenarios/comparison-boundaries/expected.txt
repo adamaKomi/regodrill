@@ -1,0 +1,4 @@
+exit 0
+policy.rego:4:20 COMP_BOUNDARY data.boundaries.adult ">=" -> ">" killed by data.boundaries_test.test_adult_at_18
+policy.rego:7:21 COMP_BOUNDARY data.boundaries.small "<" -> "<=" survived
+policy.rego:10:21 COMP_BOUNDARY data.boundaries.pass ">=" -> ">" killed by data.boundaries_test.test_pass_at_50

@@ -1,0 +1,2 @@
+exit 1
+stderr: error: does-not-exist: no such file or directory

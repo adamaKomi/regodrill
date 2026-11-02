@@ -1,0 +1,2 @@
+exit 0
+policies/policy.rego:3:22 COMP_BOUNDARY data.roots.allow ">" -> ">=" killed by data.roots_test.test_seven_denied

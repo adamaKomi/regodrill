@@ -1,0 +1,5 @@
+exit 2
+stderr: error: 2 errors occurred during loading:
+stderr: policy.rego:4: rego_parse_error: `if` keyword is required before rule body
+stderr: policy_test.rego:3: rego_parse_error: `if` keyword is required before rule body
+stderr: hint: the policies parse as Rego v0; run with --v0-compatible
