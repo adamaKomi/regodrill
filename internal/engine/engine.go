@@ -55,10 +55,13 @@ type Result struct {
 	DurationMillis float64       `json:"durationMs"`
 }
 
-// BaselineError means the unmodified tests do not all pass.
+// BaselineError means the unmodified tests do not all pass, or that there is no test to run.
 type BaselineError struct{ Failures []string }
 
 func (e *BaselineError) Error() string {
+	if len(e.Failures) == 0 {
+		return "no test found: mutation testing needs tests that pass on the unmodified policy"
+	}
 	return "baseline tests failed: " + strings.Join(e.Failures, ", ")
 }
 
@@ -98,6 +101,9 @@ func RunBaseline(ctx context.Context, p *project.Project) (*Baseline, error) {
 	if len(failures) > 0 {
 		sort.Strings(failures)
 		return nil, &BaselineError{Failures: failures}
+	}
+	if len(b.Tests) == 0 {
+		return nil, &BaselineError{}
 	}
 	sort.Strings(b.Tests)
 	for _, t := range b.Tests {
@@ -300,10 +306,12 @@ func evaluate(ctx context.Context, p *project.Project, b *Baseline, m *mutate.Mu
 		// Same verdict with or without selection: a survivor that no test evaluates is uncovered.
 		res.Status = NoCoverage
 	}
+	// The runner's test order is not deterministic, so report the first failing test by name.
 	for _, r := range results {
 		if r.Fail || r.Error != nil {
-			res.Status, res.KilledBy = Killed, fullName(r)
-			break
+			if name := fullName(r); res.Status != Killed || name < res.KilledBy {
+				res.Status, res.KilledBy = Killed, name
+			}
 		}
 	}
 	return res
@@ -316,6 +324,9 @@ func runTests(ctx context.Context, p *project.Project, mods map[string]*ast.Modu
 		SetParallel(1).
 		Filter(filter).
 		SetModules(mods)
+	if p.Store != nil {
+		r.SetStore(p.Store)
+	}
 	if tracer != nil {
 		// Not a *cover.Cover, so the runner adds no supplementary passes with indexing or early exit disabled.
 		// Parallelism is 1, so the tracer sees one test at a time.

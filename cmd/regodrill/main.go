@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -62,6 +63,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 	p, err := project.Load(paths, version)
 	if err != nil {
 		fmt.Fprintln(stderr, "error:", err)
+		// Files that don't parse or load mean the baseline cannot compile; a missing path is a usage error.
+		var invalid *project.InvalidError
+		if errors.As(err, &invalid) {
+			return exitBaseline
+		}
 		return exitUsage
 	}
 
