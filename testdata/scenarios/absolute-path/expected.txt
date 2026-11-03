@@ -1,0 +1,4 @@
+exit 0
+policy.rego:4:2 EXPR_REMOVE data.abspath.allow "input.user.active" -> "" killed by data.abspath_test.test_inactive_denied
+policy.rego:5:2 EXPR_REMOVE data.abspath.allow "input.user.level >= 2" -> "" survived
+policy.rego:5:19 COMP_BOUNDARY data.abspath.allow ">=" -> ">" killed by data.abspath_test.test_level_2

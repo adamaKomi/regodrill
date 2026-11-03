@@ -64,7 +64,8 @@ func TestScenarios(t *testing.T) {
 }
 
 // scenarioArgs reads the optional `args` file: one flag (`--name=value` form) or path per line, `#` starts a
-// comment. Paths are relative to the scenario directory; without any, the directory itself is the path.
+// comment. Paths are relative to the scenario directory; `abs:` before a path makes it absolute. Without any
+// path, the directory itself is the path.
 func scenarioArgs(t *testing.T, dir string) (flags, paths []string) {
 	t.Helper()
 	data, err := os.ReadFile(filepath.Join(dir, "args"))
@@ -80,6 +81,12 @@ func scenarioArgs(t *testing.T, dir string) (flags, paths []string) {
 		case line == "" || strings.HasPrefix(line, "#"):
 		case strings.HasPrefix(line, "-"):
 			flags = append(flags, line)
+		case strings.HasPrefix(line, "abs:"):
+			abs, err := filepath.Abs(filepath.Join(dir, strings.TrimPrefix(line, "abs:")))
+			if err != nil {
+				t.Fatal(err)
+			}
+			paths = append(paths, abs)
 		default:
 			paths = append(paths, filepath.Join(dir, line))
 		}
@@ -98,7 +105,14 @@ func runScenario(t *testing.T, dir string, flags, paths []string) string {
 	args := append([]string{"run", "--format=json", "--parallel=2"}, flags...)
 	code := run(append(args, paths...), &stdout, &stderr)
 
-	clean := func(s string) string { return strings.ReplaceAll(s, dir+string(filepath.Separator), "") }
+	absDir, err := filepath.Abs(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	clean := func(s string) string {
+		s = strings.ReplaceAll(s, absDir+string(filepath.Separator), "")
+		return strings.ReplaceAll(s, dir+string(filepath.Separator), "")
+	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "exit %d\n", code)
 	if msg := strings.TrimSpace(stderr.String()); msg != "" {

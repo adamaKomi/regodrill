@@ -45,10 +45,27 @@ over the 1,300 mutants.
 | Criterion | Target | Result | Verdict |
 |---|---|---|---|
 | Exact text patches | ≥ 99 % | 100 % | Met |
-| Duration on the full library | ≤ 10 min | 24 s | Met |
+| Duration on the full library | ≤ 10 min | 22 s | Met |
 | Coverage-based selection | ≥ 3× faster | 1.27× on the mutation phase, now sound; coverage costs 2.3 s | Not met on this corpus |
-| Useful signal | ≥ 50 % real gaps among survivors | Not measured yet: manual review pending | Open |
-| WASM build | Recorded | Not tried yet | Open |
+| Useful signal | ≥ 50 % real gaps among survivors | 54 % on 50 sampled survivors; 49 % once copies of one library are counted once; 64 % without two guard patterns ([review](spike-m0-survivor-review.md)) | Met, narrowly |
+| WASM build | Recorded | Builds unchanged, same verdicts, 5 to 6× slower on one worker (see below) | Recorded |
+
+### WASM build
+
+`GOOS=wasip1 GOARCH=wasm go build -trimpath -ldflags="-s -w"` builds without any change: 40.5 MB (8.2 MB
+gzipped), against 23.6 MB for the native Linux binary. Run in Node 26 through `node:wasi`, one worker each:
+
+| Directory | Mutants | Native | WASM in Node |
+|---|---|---|---|
+| general/allowedrepos | 3 | 0.04 s, 22 MB | 0.99 s, 263 MB |
+| general/requiredprobes | 4 | 0.22 s, 25 MB | 1.73 s, 276 MB |
+| pod-security-policy/capabilities | 33 | 3.24 s, 31 MB | 19.56 s, 276 MB |
+| pod-security-policy/seccomp | 38 | 4.42 s, 35 MB | 22.87 s, 287 MB |
+| general/containerlimits | 55 | 5.36 s, 33 MB | 29.30 s, 275 MB |
+
+Verdicts are identical. WASM costs about 1 s of startup, 5 to 6× the time, and has no parallelism, so the
+native binary can be another 4 to 8× faster with workers. Conclusion: ship native binaries per platform;
+keep WASM as a fallback for environments without them (VS Code for the Web).
 
 ## Findings
 
@@ -78,8 +95,12 @@ over the 1,300 mutants.
    wildcard exemption (`endswith(exemption, "*")`, `startswith(img, prefix)`).
 5. **Some survivors are debatable.** Many are type guards (`is_string(mem)`, `is_number(orig)`) or kind
    filters (`input.review.kind.kind == "Service"`) that Gatekeeper's constraint `match` already enforces in
-   production. They need the manual review of criterion 4, and probably operator rules or ignore
-   annotations.
+   production. The [manual review](spike-m0-survivor-review.md) classifies 50 of them: 27 real gaps, 8
+   debatable, 15 equivalent.
+6. **Absolute paths produced no mutant** (found while measuring WASM). OPA's loader keys its modules by
+   path without the leading `/`, while parsed locations keep it, so no expression matched its file. Fixed
+   by using the file name, with the `absolute-path` scenario. Editors and CI scripts pass absolute paths,
+   so this would have broken the VS Code integration.
 
 ## Fixes
 
@@ -95,15 +116,26 @@ over the 1,300 mutants.
   made the runner add two supplementary passes per test (indexing and early exit disabled).
 - Regression tests: `internal/engine/engine_test.go` and the scenario
   `testdata/scenarios/indexed-rule-and-duplicate-tests` (a duplicate test name and an indexed rule).
-- Scenario catalog (`testdata/scenarios`): 25 end-to-end runs with expected verdicts, each checked with and
+- Scenario catalog (`testdata/scenarios`): end-to-end runs with expected verdicts, each checked with and
   without selection. Writing it found four more bugs, now fixed: data files were not loaded, `_test.rego`
   helper files were mutated, parse errors exited with 1 instead of 2, and a run without tests reported
   success.
 
-Spec to update: §6 steps 2, 4 and 5 (selection by rule reach, `no_coverage` definition).
+The specification was updated accordingly (v0.3, rego-lens PR #8).
 
-## Next steps
+## Recommendation: go
 
-1. Manual review of a random sample of 50 survivors: real gap, debatable or equivalent (criterion 4).
-2. Try the WASM build (`GOOS=wasip1`) and record size and speed.
-3. Unit tests for each operator: one killed and one surviving example.
+Four criteria out of five are met or recorded. The selection criterion (≥ 3× faster) is not, but it
+mattered only as a way to keep runs short, and runs are already short: 22 s for the whole library. The cost
+is compiling each mutant, not running tests, so the next speed gains are elsewhere (compiling only what
+changed, `--since`).
+
+The useful-signal criterion is met only narrowly, and the review shows how to raise it: skip type and
+length guards that protect a failing built-in, and group identical files in reports.
+
+## Next steps (M1)
+
+1. Operator rules from the review: don't remove `is_string`/`is_number`-style guards or `count(x) > n`
+   guards before a built-in that fails without them; group mutants of identical files in reports.
+2. The eight remaining operators of spec §5, each with a scenario (one killed, one surviving example).
+3. Ignores (`# regodrill:ignore`), `.regodrill.yaml`, SARIF, `--threshold`, `--since`, network off.
