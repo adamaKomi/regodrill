@@ -34,7 +34,9 @@ archives:
   - id: wasm
     ids: [wasm]
     formats: [binary]
-    name_template: "{{ .ProjectName }}_{{ .Version }}.wasm"
+    # goreleaser appends the binary's extension (.wasm for wasip1) to a binary archive's name: the first
+    # draft of v0.1.0 was named regodrill_0.1.0.wasm.wasm with ".wasm" in this template.
+    name_template: "{{ .ProjectName }}_{{ .Version }}"
 
 checksum:
   name_template: checksums.txt
