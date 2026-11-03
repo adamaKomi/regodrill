@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"errors"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -49,7 +50,8 @@ func TestBaselineNamesDuplicateTestsLikeTheRunner(t *testing.T) {
 func TestBaselineCoverageAndReach(t *testing.T) {
 	_, b := baseline(t, "../../testdata/scenarios/indexed-rule-and-duplicate-tests")
 	// Line 7 (input.type == "LoadBalancer") is evaluated only when the indexed input matches.
-	if got, want := b.CoveringTests("../../testdata/scenarios/indexed-rule-and-duplicate-tests/policy.rego", 7), []string{"data.svc_test.test_load_balancer_denied"}; !slices.Equal(got, want) {
+	file := filepath.FromSlash("../../testdata/scenarios/indexed-rule-and-duplicate-tests/policy.rego")
+	if got, want := b.CoveringTests(file, 7), []string{"data.svc_test.test_load_balancer_denied"}; !slices.Equal(got, want) {
 		t.Errorf("covering tests of line 7 = %q, want %q", got, want)
 	}
 	// All three tests look the rule up.

@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -20,6 +21,9 @@ import (
 var update = flag.Bool("update", false, "rewrite expected.txt of each scenario")
 
 const scenarioRoot = "../../testdata/scenarios"
+
+// windowsPath matches a relative Windows file path such as lib\text.rego.
+var windowsPath = regexp.MustCompile(`[\w.\-]+(?:\\[\w.\-]+)*\\[\w.\-]+\.(?:rego|yaml|yml|json)\b`)
 
 func TestScenarios(t *testing.T) {
 	entries, err := os.ReadDir(scenarioRoot)
@@ -113,11 +117,17 @@ func runScenario(t *testing.T, dir string, flags, paths []string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Expected files use `/`, whatever the platform.
+	// Expected files use `/` in file paths, whatever the platform. Only path-like tokens are converted: a
+	// backslash elsewhere (a regular expression in a warning) is text.
 	clean := func(s string) string {
-		s = strings.ReplaceAll(s, absDir+string(filepath.Separator), "")
-		s = strings.ReplaceAll(s, dir+string(filepath.Separator), "")
-		return filepath.ToSlash(s)
+		for _, prefix := range []string{absDir, dir} {
+			s = strings.ReplaceAll(s, prefix+string(filepath.Separator), "")
+			s = strings.ReplaceAll(s, prefix+"/", "")
+		}
+		if filepath.Separator == '\\' {
+			s = windowsPath.ReplaceAllStringFunc(s, filepath.ToSlash)
+		}
+		return s
 	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "exit %d\n", code)
