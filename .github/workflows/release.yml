@@ -26,13 +26,12 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # Build provenance for the archives. Artifact attestations need a public repository (or GitHub
+      # Build provenance for every release asset. Artifact attestations need a public repository (or GitHub
       # Enterprise Cloud), so this step is skipped while the repository is private.
+      # The subjects come from goreleaser's checksums file, with their release names: goreleaser uploads the
+      # wasm binary from its build directory, so `dist/*.wasm` matched nothing and v0.1.0 and v0.2.0 attest
+      # only the archives and checksums.txt (https://github.com/actions/attest#inputs: subject-checksums).
       - uses: actions/attest-build-provenance@v4
         if: ${{ !github.event.repository.private }}
         with:
-          subject-path: |
-            dist/*.tar.gz
-            dist/*.zip
-            dist/*.wasm
-            dist/checksums.txt
+          subject-checksums: dist/checksums.txt
