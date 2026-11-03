@@ -1,0 +1,50 @@
+# Release configuration (milestone M2). Run by .github/workflows/release.yml on a v* tag.
+version: 2
+project_name: regodrill
+
+builds:
+  - id: native
+    main: ./cmd/regodrill
+    binary: regodrill
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags: ["-s -w -X main.version={{ .Version }}"]
+  # Fallback for environments without a native binary (VS Code for the Web): same verdicts, 5 to 6 times
+  # slower, no parallelism (docs/spike-m0.md).
+  - id: wasm
+    main: ./cmd/regodrill
+    binary: regodrill
+    env: [CGO_ENABLED=0]
+    goos: [wasip1]
+    goarch: [wasm]
+    flags: [-trimpath]
+    ldflags: ["-s -w -X main.version={{ .Version }}"]
+
+archives:
+  - id: native
+    ids: [native]
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files: [LICENSE, README.md, CHANGELOG.md]
+  - id: wasm
+    ids: [wasm]
+    formats: [binary]
+    name_template: "{{ .ProjectName }}_{{ .Version }}.wasm"
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude: ["^docs:", "^test:", "^ci:", "^chore:"]
+
+release:
+  # A draft: the maintainer reviews the notes and publishes it.
+  draft: true
