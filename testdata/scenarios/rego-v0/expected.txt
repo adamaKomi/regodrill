@@ -1,5 +1,3 @@
 exit 0
-policy.rego:5:2 EXPR_REMOVE data.v0.violation "container := input.containers[_]" -> "" stillborn: 1 error occurred: policy.rego:6: rego_unsafe_var_error: var container is unsafe
 policy.rego:6:2 EXPR_REMOVE data.v0.violation "container.cpu > 2" -> "" killed by data.v0.test_small_container
 policy.rego:6:16 COMP_BOUNDARY data.v0.violation ">" -> ">=" survived
-policy.rego:7:2 EXPR_REMOVE data.v0.violation "msg := sprintf(\"%v uses too much CPU\", [contain..." -> "" stillborn: 1 error occurred: policy.rego:4: rego_unsafe_var_error: var msg is unsafe

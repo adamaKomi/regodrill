@@ -74,7 +74,7 @@ func TestSelectionIsSound(t *testing.T) {
 	}{
 		6: {Killed, `data.svc_test["test_allowed#01"]`}, // kind == "Service": only the renamed duplicate catches it
 		7: {Killed, "data.svc_test.test_allowed"},       // type == "LoadBalancer": its killer never covers line 7
-		8: {Stillborn, ""},                              // msg := ...: msg is unsafe in the head
+		// Line 8 (msg := ...) has no mutant: the head needs msg.
 	}
 	if len(mutants) != len(want) {
 		t.Fatalf("got %d mutants, want %d", len(mutants), len(want))

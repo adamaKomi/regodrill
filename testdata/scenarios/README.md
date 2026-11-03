@@ -30,6 +30,7 @@ them.
 | `comparison-boundaries` | `COMP_BOUNDARY` on body expressions and on a rule value; a boundary that no test uses survives; `todo_` tests are skipped |
 | `default-values` | `DEFAULT_FLIP` on booleans only; a default that no test ever falls back to is `no_coverage` |
 | `expression-removal` | `EXPR_REMOVE` killed and surviving in the same body |
+| `stillborn-filter` | `EXPR_REMOVE` skips a declaration that the rule needs, keeps one that something else can bind (ref key iteration) or that acts as a guard, and leaves `=` to the compiler |
 | `timeout` | A mutant that makes evaluation explode is stopped and counted as `timeout` |
 
 ### Language constructs

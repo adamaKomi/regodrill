@@ -1,3 +1,2 @@
 exit 0
-policy.rego:4:2 EXPR_REMOVE data.helpers.deny "some c in input.containers" -> "" stillborn: 1 error occurred: policy.rego:5: rego_unsafe_var_error: var c is unsafe
 policy.rego:5:2 EXPR_REMOVE data.helpers.deny "c.privileged" -> "" killed by data.helpers_test.test_safe_allowed
