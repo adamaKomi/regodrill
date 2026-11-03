@@ -24,8 +24,23 @@ jobs:
         if: runner.os == 'Linux'
         run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
       - run: go vet ./...
+      # The opa release of the OPA version in go.mod, checked against its published SHA-256, so that
+      # TestCheckMatchesOPA compares `regodrill check` with `opa check` (REQUIRE_OPA=1 makes it mandatory).
+      - name: Install opa
+        if: runner.os == 'Linux'
+        run: |
+          version="$(go list -m -f '{{.Version}}' github.com/open-policy-agent/opa)"
+          mkdir -p "$RUNNER_TEMP/opa" && cd "$RUNNER_TEMP/opa"
+          base="https://github.com/open-policy-agent/opa/releases/download/${version}"
+          curl -fsSLO "$base/opa_linux_amd64_static"
+          curl -fsSLO "$base/opa_linux_amd64_static.sha256"
+          sha256sum -c opa_linux_amd64_static.sha256
+          mv opa_linux_amd64_static opa && chmod +x opa
+          echo "$RUNNER_TEMP/opa" >> "$GITHUB_PATH"
       # Unit tests and the scenario catalog (testdata/scenarios). The race detector runs on Linux.
       - if: runner.os == 'Linux'
+        env:
+          REQUIRE_OPA: '1'
         run: go test -race ./...
       - if: runner.os != 'Linux'
         run: go test ./...

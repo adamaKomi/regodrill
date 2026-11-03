@@ -37,6 +37,7 @@ Usage:
   regodrill run [flags] [paths...]    run mutation testing (default path: .)
   regodrill list [flags] [paths...]   list the mutants, without running tests
   regodrill operators [--format json] describe the mutation operators
+  regodrill check [flags] <paths...>  parse and compile Rego files, like opa check
   regodrill version                   print the versions of regodrill and OPA
 
 Run "regodrill run -h" for the flags.
@@ -58,6 +59,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return listCommand(args[1:], stdout, stderr)
 	case "operators":
 		return operatorsCommand(args[1:], stdout, stderr)
+	case "check":
+		return checkCommand(args[1:], stderr)
 	case "version", "--version":
 		fmt.Fprintf(stdout, "regodrill %s (OPA %s)\n", version, opaversion.Version)
 		return exitOK

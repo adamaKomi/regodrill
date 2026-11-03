@@ -5,6 +5,17 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- `regodrill check`: parses and compiles Rego files like `opa check` of the same OPA version, with the same
+  output for `--format pretty|json`, `--v0-compatible`, `--max-errors` and `--ignore`. Editors can check Rego
+  with the regodrill binary alone. CI compares both commands byte for byte on `testdata/check`.
+
+### Fixed
+
+- Every release asset has a build provenance attestation, the WebAssembly build included: 0.1.0 and 0.2.0
+  attest only the native archives and `checksums.txt`.
+
 ## [0.2.0] - 2026-11-03
 
 ### Added
