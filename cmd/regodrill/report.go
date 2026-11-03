@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -15,8 +16,25 @@ import (
 	"github.com/adamaKomi/regodrill/internal/mutate"
 )
 
-// version of regodrill, set at release time with -ldflags "-X main.version=...".
-var version = "0.1.0-dev"
+// version of regodrill. Release builds set it with -ldflags "-X main.version=..." (goreleaser); `go install
+// module@version` doesn't, but Go embeds the module version in the binary, so it is read from there.
+var version = ""
+
+func init() {
+	if version == "" {
+		version = moduleVersion()
+	}
+}
+
+// moduleVersion is the main module's version from the build info ("v0.1.0" gives "0.1.0"), or "dev" for a
+// build without one (go run, or a checkout without a version tag).
+func moduleVersion() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok || info.Main.Version == "" || info.Main.Version == "(devel)" {
+		return "dev"
+	}
+	return strings.TrimPrefix(info.Main.Version, "v")
+}
 
 type summary struct {
 	Score      *float64 `json:"score"`
