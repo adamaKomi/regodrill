@@ -5,16 +5,24 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-03
+
 ### Added
 
 - `ruleLine` in the JSON report: the line where the mutant's rule definition starts, so editors can show a
   summary per definition.
+
+### Changed
+
+- Release notes start from GitHub's generated notes (pull request titles) instead of a list of commits.
 
 ### Fixed
 
 - One-line `else` clauses without braces (`else := 2 if input.c >= 4`) are mutated like other bodies. OPA
   gives such a body the location of the whole clause, so their comparisons and constants were skipped, and
   `NOT_TOGGLE` produced a stillborn mutant there.
+- `regodrill version` reports the module version when installed with `go install` (0.1.0 printed
+  `0.1.0-dev`).
 
 ## [0.1.0] - 2026-11-03
 
@@ -42,4 +50,6 @@ First version.
   and stops on unstable tests; a mutant that runs too long is a timeout. Hints for Rego v0 without
   `--v0-compatible`, custom built-ins, and data files that conflict.
 
+[Unreleased]: https://github.com/adamaKomi/regodrill/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/adamaKomi/regodrill/releases/tag/v0.2.0
 [0.1.0]: https://github.com/adamaKomi/regodrill/releases/tag/v0.1.0
