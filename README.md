@@ -3,9 +3,9 @@
 **Mutation testing for Rego policies.** regodrill tells you whether the tests of an
 [Open Policy Agent](https://www.openpolicyagent.org/) policy would actually catch a bug.
 
-> Status: **prototype (spike M0)**. The engine works end to end with 3 operators and has run on the whole
-> [gatekeeper-library](https://github.com/open-policy-agent/gatekeeper-library). Flags, output formats and
-> operators will change before v0.1.0. See [Roadmap](#roadmap).
+> Status: **0.x**. Ten operators, test selection, text, JSON and SARIF reports; it runs on the whole
+> [gatekeeper-library](https://github.com/open-policy-agent/gatekeeper-library). The JSON report is versioned
+> (`schemaVersion`); flags and operators may still change before 1.0. See [Roadmap](#roadmap).
 
 ## Why
 
@@ -269,7 +269,7 @@ The full design is in the [specification](https://github.com/adamaKomi/rego-synt
 |---|---|
 | **M0 Spike** (done, decision: go) | Engine, 3 operators, test selection, text and JSON output, measures on gatekeeper-library |
 | **M1 CLI MVP** (done except `LOGIC_SWAP`) | 10 of 11 operators, `# regodrill:ignore` annotations, `.regodrill.yaml`, SARIF output, `--threshold`, `--since <git ref>`, network built-ins off by default |
-| **M2 Release** (v0.1.0) | Binaries for Linux, macOS and Windows, `go install` |
+| **M2 Release** (done, v0.1.0) | Binaries for Linux, macOS and Windows, `go install` |
 | M3 VS Code | Survivors as diagnostics in the [Rego Syntax Support](https://marketplace.visualstudio.com/items?itemName=AdamaKomi.rego-syntax-support) extension |
 | M4 GitHub Action | Mutation testing of the lines changed by a pull request, results in code scanning |
 
