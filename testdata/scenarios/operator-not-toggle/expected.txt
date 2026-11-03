@@ -1,0 +1,7 @@
+exit 0
+policy.rego:4:2 NOT_TOGGLE data.nottoggle.allow "not" -> "" killed by data.nottoggle_test.test_active_user
+policy.rego:5:2 NOT_TOGGLE data.nottoggle.allow "" -> "not " killed by data.nottoggle_test.test_active_user
+policy.rego:12:2 NOT_TOGGLE data.nottoggle.admin "" -> "not " killed by data.nottoggle_test.test_user_not_admin
+policy.rego:13:2 NOT_TOGGLE data.nottoggle.admin "" -> "not " no_coverage
+policy.rego:17:2 NOT_TOGGLE data.nottoggle.deny "" -> "not " killed by data.nottoggle_test.test_blocked
+policy.rego:19:2 NOT_TOGGLE data.nottoggle.deny "" -> "not " killed by data.nottoggle_test.test_blocked

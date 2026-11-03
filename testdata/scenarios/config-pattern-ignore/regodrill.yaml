@@ -1,0 +1,7 @@
+version: 1
+ignore:
+  # Gatekeeper's constraint match already filters the kind: the mutants of these lines are not test gaps.
+  - pattern: 'input\.review\.kind\.kind =='
+    reason: "Gatekeeper's match filters the kind"
+  # Matches no line: reported as a warning.
+  - pattern: 'input\.review\.operation == "DELETE"'

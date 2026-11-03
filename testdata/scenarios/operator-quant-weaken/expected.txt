@@ -1,0 +1,3 @@
+exit 0
+policy.rego:5:2 QUANT_WEAKEN data.quant.all_safe "every c in input.containers { c.privileged == f..." -> "some c in input.containers; c.privileged == false" killed by data.quant_test.test_one_privileged
+policy.rego:12:2 QUANT_WEAKEN data.quant.all_labeled "every _, v in input.labels { v != \"\" }" -> "some _, v in input.labels; v != \"\"" survived

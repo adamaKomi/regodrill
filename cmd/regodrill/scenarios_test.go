@@ -64,8 +64,9 @@ func TestScenarios(t *testing.T) {
 }
 
 // scenarioArgs reads the optional `args` file: one flag (`--name=value` form) or path per line, `#` starts a
-// comment. Paths are relative to the scenario directory; `abs:` before a path makes it absolute. Without any
-// path, the directory itself is the path.
+// comment. Paths are relative to the scenario directory; `abs:` before a path makes it absolute. In a flag,
+// `{dir}` is the scenario directory (`--config={dir}/regodrill.yaml`). Without any path, the directory
+// itself is the path, unless a line says `(no paths)`.
 func scenarioArgs(t *testing.T, dir string) (flags, paths []string) {
 	t.Helper()
 	data, err := os.ReadFile(filepath.Join(dir, "args"))
@@ -75,12 +76,15 @@ func scenarioArgs(t *testing.T, dir string) (flags, paths []string) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	noPaths := false
 	for _, line := range strings.Split(string(data), "\n") {
 		line = strings.TrimSpace(line)
 		switch {
 		case line == "" || strings.HasPrefix(line, "#"):
+		case line == "(no paths)":
+			noPaths = true // let the configuration file give the paths
 		case strings.HasPrefix(line, "-"):
-			flags = append(flags, line)
+			flags = append(flags, strings.ReplaceAll(line, "{dir}", dir))
 		case strings.HasPrefix(line, "abs:"):
 			abs, err := filepath.Abs(filepath.Join(dir, strings.TrimPrefix(line, "abs:")))
 			if err != nil {
@@ -91,7 +95,7 @@ func scenarioArgs(t *testing.T, dir string) (flags, paths []string) {
 			paths = append(paths, filepath.Join(dir, line))
 		}
 	}
-	if len(paths) == 0 {
+	if len(paths) == 0 && !noPaths {
 		paths = []string{dir}
 	}
 	return flags, paths
@@ -109,9 +113,11 @@ func runScenario(t *testing.T, dir string, flags, paths []string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Expected files use `/`, whatever the platform.
 	clean := func(s string) string {
 		s = strings.ReplaceAll(s, absDir+string(filepath.Separator), "")
-		return strings.ReplaceAll(s, dir+string(filepath.Separator), "")
+		s = strings.ReplaceAll(s, dir+string(filepath.Separator), "")
+		return filepath.ToSlash(s)
 	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "exit %d\n", code)
@@ -120,25 +126,33 @@ func runScenario(t *testing.T, dir string, flags, paths []string) string {
 			fmt.Fprintf(&b, "stderr: %s\n", line)
 		}
 	}
-	if code != exitOK {
+	if code != exitOK && code != exitThreshold {
 		return b.String()
 	}
 	var rep struct {
 		Mutants []struct {
-			File, Operator, Original, Replacement, Status, KilledBy, Error, Rule string
-			Line, Column                                                         int
+			File, Operator, Original, Replacement, Status, KilledBy, Error, Rule, IgnoreReason string
+			Line, Column                                                                       int
+			PatchOK                                                                            bool
 		}
 	}
 	if err := json.Unmarshal(stdout.Bytes(), &rep); err != nil {
 		t.Fatalf("invalid JSON report: %v\n%s", err, stdout.String())
 	}
 	for _, m := range rep.Mutants {
+		// A mutant that compiles must change the policy: a patch that parses to the same AST would be
+		// reported as a survivor that no test could ever kill. Ignored mutants are not run, so not checked.
+		if m.Status != "stillborn" && m.Status != "ignored" && m.Status != "equivalent" && !m.PatchOK {
+			t.Errorf("%s:%d:%d %s: the patch does not change the AST", m.File, m.Line, m.Column, m.Operator)
+		}
 		fmt.Fprintf(&b, "%s:%d:%d %s %s %q -> %q %s", clean(m.File), m.Line, m.Column, m.Operator, m.Rule, oneLine(m.Original), m.Replacement, m.Status)
 		switch {
 		case m.KilledBy != "":
 			fmt.Fprintf(&b, " by %s", m.KilledBy)
 		case m.Error != "":
 			fmt.Fprintf(&b, ": %s", clean(m.Error))
+		case m.IgnoreReason != "":
+			fmt.Fprintf(&b, ": %s", m.IgnoreReason)
 		}
 		b.WriteByte('\n')
 	}

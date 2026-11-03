@@ -1,0 +1,16 @@
+exit 0
+stderr: warning: policy.rego:16: unknown operator "NOPE" in regodrill:ignore
+stderr: warning: policy.rego:13: ignore matches no mutant on policy.rego:13 (any operator)
+policy.rego:4:2 EXPR_REMOVE data.ignores.allow "input.user.active" -> "" killed by data.ignores_test.test_inactive_denied
+policy.rego:5:2 EXPR_REMOVE data.ignores.allow "count(input.user.roles) > 0" -> "" survived
+policy.rego:5:26 COMP_BOUNDARY data.ignores.allow ">" -> ">=" ignored: same as >= 1
+policy.rego:5:28 CONST_NUMBER data.ignores.allow "0" -> "1" ignored: same as >= 1
+policy.rego:5:28 CONST_NUMBER data.ignores.allow "0" -> "-1" ignored: same as >= 1
+policy.rego:6:2 EXPR_REMOVE data.ignores.allow "input.user.level >= 2" -> "" ignored: the gateway checks the level
+policy.rego:6:19 COMP_BOUNDARY data.ignores.allow ">=" -> ">" ignored: the gateway checks the level
+policy.rego:6:22 CONST_NUMBER data.ignores.allow "2" -> "3" ignored: the gateway checks the level
+policy.rego:6:22 CONST_NUMBER data.ignores.allow "2" -> "1" ignored: the gateway checks the level
+policy.rego:11:11 EXPR_REMOVE data.ignores.deny "input.user.banned;" -> "" ignored
+policy.rego:11:30 EXPR_REMOVE data.ignores.deny "input.user.reason != \"\"" -> "" ignored
+policy.rego:11:51 CONST_STRING data.ignores.deny "\"\"" -> "\"_regodrill\"" survived
+policy.rego:16:24 CONST_STRING data.ignores.named "\"a\"" -> "\"a_regodrill\"" ignored

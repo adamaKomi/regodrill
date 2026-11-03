@@ -1,0 +1,11 @@
+exit 0
+policy.rego:5:2 EXPR_REMOVE data.pm.allow "is_admin(input.user)" -> "" killed by data.pm_test.test_not_admin
+policy.rego:5:2 NOT_TOGGLE data.pm.allow "" -> "not " killed by data.pm_test.test_not_admin
+policy.rego:6:2 EXPR_REMOVE data.pm.allow "input.action == \"read\"" -> "" killed by data.pm_test.test_write
+policy.rego:6:2 NOT_TOGGLE data.pm.allow "" -> "not " killed by data.pm_test.test_read
+policy.rego:11:2 EXPR_REMOVE data.pm.is_admin "u.role == \"admin\"" -> "" no_coverage
+policy.rego:11:2 NOT_TOGGLE data.pm.is_admin "" -> "not " no_coverage
+policy.rego:12:2 EXPR_REMOVE data.pm.is_admin "u.active" -> "" no_coverage
+policy.rego:12:2 NOT_TOGGLE data.pm.is_admin "" -> "not " no_coverage
+policy.rego:16:12 NOT_TOGGLE data.pm.expired "" -> "not " killed by data.pm_test.test_expired_at_deadline
+policy.rego:16:26 COMP_BOUNDARY data.pm.expired ">=" -> ">" killed by data.pm_test.test_expired_at_deadline

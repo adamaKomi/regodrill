@@ -19,6 +19,18 @@ annotation := a if {
 }
 
 level := l if {
-	l = input.level # kept but stillborn: `=` is not a declaration, so the check leaves it to the compiler
+	l = input.level # no mutant: the unification binds l, which the head and the next line use
 	l > 0 # removal and > → >= survive: no test uses level 0
+}
+
+# The check cannot foresee type errors. Removing the second definition of profiles (RULE_REMOVE) leaves
+# only elements without a "file" key, so the type checker rejects p.file below: stillborn, reported with the
+# compiler's error and left out of the score. Removing the first survives: files ignores type "a".
+profiles contains {"type": "a"} if input.a
+
+profiles contains {"type": "b", "file": "f.json"} if input.b
+
+files contains p.file if {
+	some p in profiles # no mutant: p is used below and in the head
+	p.type == "b" # removal survives: every test profile of type "b" has a file
 }

@@ -1,2 +1,4 @@
 # A path that does not exist is a usage error: exit code 1.
 does-not-exist
+# Written for the first three operators.
+--operators=COMP_BOUNDARY,EXPR_REMOVE,DEFAULT_FLIP

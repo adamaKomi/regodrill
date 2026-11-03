@@ -1,0 +1,3 @@
+exit 2
+stderr: error: 1 error occurred during loading: samples/pod-b.yaml: merge error
+stderr: hint: a JSON or YAML file under the paths is not a data document that fits with the others (a Kubernetes manifest, a CI workflow?): pass the policy directories only, or skip files with --ignore, for example --ignore '*.yaml'

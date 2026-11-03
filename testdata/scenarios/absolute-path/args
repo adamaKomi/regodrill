@@ -1,2 +1,4 @@
 # Editors and CI scripts pass absolute paths. The result must be the same as with a relative path.
 abs:.
+# Written for the first three operators.
+--operators=COMP_BOUNDARY,EXPR_REMOVE,DEFAULT_FLIP

@@ -1,0 +1,5 @@
+exit 0
+policy.rego:5:29 RULE_REMOVE data.rulev0.service_account "{ obj.kind == \"Pod\" # first block removed: kill..." -> "" killed by data.rulev0.test_pod
+policy.rego:8:2 RULE_REMOVE data.rulev0.service_account "{ obj.kind == \"Deployment\" # second block remov..." -> "" no_coverage
+policy.rego:15:1 RULE_REMOVE data.rulev0.accept "accept(\"RunAsAny\", _)" -> "" killed by data.rulev0.test_run_as_any
+policy.rego:17:1 RULE_REMOVE data.rulev0.accept "accept(\"MustRunAsNonRoot\", user) { user != 0 }" -> "" no_coverage

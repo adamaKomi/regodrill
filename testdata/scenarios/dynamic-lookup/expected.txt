@@ -1,4 +1,3 @@
 exit 0
 policy.rego:4:36 COMP_BOUNDARY data.dynamic.checks.small "<" -> "<=" killed by data.dynamic_test.test_five_items
-policy.rego:8:2 EXPR_REMOVE data.dynamic.failed "some name in [\"has_owner\", \"small\"]" -> "" stillborn: 1 error occurred: policy.rego:9: rego_unsafe_var_error: var name is unsafe
 policy.rego:9:2 EXPR_REMOVE data.dynamic.failed "not checks[name]" -> "" killed by data.dynamic_test.test_all_pass

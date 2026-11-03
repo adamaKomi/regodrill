@@ -1,0 +1,4 @@
+exit 0
+policy.rego:6:2 EXPR_REMOVE data.table.allow "input.age >= 18" -> "" killed by data.table_test.test_ages
+policy.rego:6:12 COMP_BOUNDARY data.table.allow ">=" -> ">" killed by data.table_test.test_ages
+policy.rego:7:2 EXPR_REMOVE data.table.allow "input.active" -> "" survived

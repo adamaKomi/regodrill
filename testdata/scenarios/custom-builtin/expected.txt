@@ -1,0 +1,3 @@
+exit 2
+stderr: error: baseline: 1 error occurred: policy.rego:7: rego_type_error: undefined function result.new
+stderr: hint: result.new is not an OPA built-in. If the project runs its tests with a custom OPA build that adds built-ins, regodrill cannot evaluate them yet: run it on the policies that don't call them
