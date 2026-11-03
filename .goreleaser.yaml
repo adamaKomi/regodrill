@@ -41,11 +41,10 @@ archives:
 checksum:
   name_template: checksums.txt
 
+# GitHub's generated release notes (pull request titles), instead of a list of commits with author emails.
+# They are a starting point: the maintainer edits the draft before publishing it.
 changelog:
-  use: github
-  sort: asc
-  filters:
-    exclude: ["^docs:", "^test:", "^ci:", "^chore:"]
+  use: github-native
 
 release:
   # A draft: the maintainer reviews the notes and publishes it.
