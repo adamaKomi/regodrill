@@ -1,6 +1,7 @@
 package mutate
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
@@ -181,4 +182,36 @@ func TestExprRemoveShadowedRuleName(t *testing.T) {
 	src := "package p\n\nhpa(x) := x\n\nallow if {\n\thpa := input.object\n\thpa.kind == \"HPA\"\n}\n"
 	got := patched(t, ast.RegoV1, src, ExprRemove)
 	check(t, got, []string{"hpa(x) := x\n\nallow if {\n\thpa := input.object\n\t\n}\n"})
+}
+
+// Each definition has its own line: two definitions of allow, and an else chain that stays with its rule.
+func TestRuleLine(t *testing.T) {
+	src := "package p\n\nallow if input.a >= 1\n\nallow if {\n\tinput.b >= 2\n}\n\nlevel := 1 if input.c >= 3 else := 2 if input.c >= 4\n"
+	p := &project.Project{RegoVersion: ast.RegoV1}
+	mod, err := p.Parse("policy.rego", src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Files = []*project.File{{Path: "policy.rego", Source: src, Module: mod}}
+	var got []string
+	for _, m := range Generate(p, map[string]bool{CompBoundary: true}) {
+		got = append(got, fmt.Sprintf("%s@%d:%d", m.Rule, m.Line, m.RuleLine))
+	}
+	want := []string{"data.p.allow@3:3", "data.p.allow@6:5", "data.p.level@9:9", "data.p.level@9:9"}
+	if !slices.Equal(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
+// OPA locates a one-line else body (`else := 2 if input.c >= 4`) at the whole clause; the project re-locates
+// it, so the patches land on the right tokens.
+func TestOneLineElsePatches(t *testing.T) {
+	src := "package p\n\nlevel := 1 if input.c >= 3 else := 2 if input.c >= 4\n"
+	check(t, patched(t, ast.RegoV1, src, CompBoundary, NotToggle), []string{
+		// Mutants are in source order: the `not` goes at the start of each expression, before its operator.
+		"level := 1 if not input.c >= 3 else := 2 if input.c >= 4\n",
+		"level := 1 if input.c > 3 else := 2 if input.c >= 4\n",
+		"level := 1 if input.c >= 3 else := 2 if not input.c >= 4\n",
+		"level := 1 if input.c >= 3 else := 2 if input.c > 4\n",
+	})
 }

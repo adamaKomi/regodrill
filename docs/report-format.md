@@ -45,6 +45,7 @@ meaning, makes it 2. Readers should ignore fields they don't know.
 | `original` | string | The replaced source text (empty for an insertion) |
 | `replacement` | string | The new text (empty for a removal) |
 | `rule` | string | Path of the enclosing rule, for example `data.app.authz.allow` |
+| `ruleLine` | number | Line where the enclosing definition starts. Each definition of an incremental rule or a function has its own; an `else` branch belongs to its rule's definition. Editors group mutants by `file` and `ruleLine` (a CodeLens per definition) |
 | `status` | string | `killed`, `timeout`, `survived`, `no_coverage`, `stillborn`, `equivalent` or `ignored` |
 | `message` | string | One sentence for people: what changed and what happened |
 | `killedBy` | string, optional | For `killed`: the first failing test by name, as the test runner names it (`data.pkg.test_x`, or `data.pkg["test_x#01"]` for a renamed duplicate) |

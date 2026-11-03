@@ -68,6 +68,7 @@ type contractMutant struct {
 	Original      string   `json:"original"`
 	Replacement   string   `json:"replacement"`
 	Rule          string   `json:"rule"`
+	RuleLine      int      `json:"ruleLine"`
 	Status        string   `json:"status"`
 	Message       string   `json:"message"`
 	KilledBy      string   `json:"killedBy"`
@@ -104,6 +105,9 @@ func TestReportContract(t *testing.T) {
 			counts[m.Status]++
 			if !strings.HasPrefix(m.ID, m.File+":") || m.Message == "" || m.Rule == "" || !strings.HasPrefix(m.Rule, "data.") {
 				t.Errorf("%s: incomplete mutant %+v", d, m)
+			}
+			if m.RuleLine < 1 || m.RuleLine > m.Line {
+				t.Errorf("%s: %s: ruleLine %d is not a line at or before the mutant", d, m.ID, m.RuleLine)
 			}
 			if m.Range.Start != (contractPosition{m.Line, m.Column}) {
 				t.Errorf("%s: %s: range starts at %v, not at line and column", d, m.ID, m.Range.Start)
