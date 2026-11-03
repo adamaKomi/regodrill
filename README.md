@@ -108,6 +108,7 @@ a per-rule summary (with regodrill 0.2.0 or later).
 regodrill run [flags] [paths...]    run mutation testing (default path: .)
 regodrill list [flags] [paths...]   list the mutants, without running tests
 regodrill operators [--format json] describe the mutation operators
+regodrill check [flags] <paths...>  parse and compile Rego files, like opa check
 regodrill version                   print the versions of regodrill and OPA
 ```
 
@@ -139,6 +140,17 @@ configuration); `2` the baseline cannot run: a test fails on the unmodified poli
 
 On a terminal, the text report is colored (`NO_COLOR` turns it off) and stderr shows the progress of the
 run; redirected or in CI, the output is plain.
+
+### Checking Rego files
+
+`regodrill check` parses and compiles `.rego` files like `opa check` of the same OPA version (see
+`regodrill version`), so that editors can check Rego without a separate `opa` binary. The Rego Syntax Support
+extension uses it for the Rego embedded in Gatekeeper templates. It takes the flags `--format pretty|json`,
+`--v0-compatible`, `--max-errors N` (`-m`, default 10, 0 for no limit) and `--ignore PATTERN`, and gives the
+same output as `opa check` with them: nothing and exit code 0 when everything compiles, otherwise the errors on
+stderr (as `{"errors": [...]}` with `--format json`) and exit code 1. The other flags of `opa check`
+(`--bundle`, `--schema`, `--capabilities`, `--strict`, `--rego-v1`) are not supported. The test suite
+compares both commands byte for byte (`testdata/check`).
 
 ### Ignoring a mutant
 
