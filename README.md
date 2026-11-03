@@ -78,14 +78,28 @@ score becomes 100 %.
 
 ## Install
 
-regodrill is not released yet. Build it from source with Go 1.27 or later:
+**Binaries**: download the archive for your platform from the
+[releases](https://github.com/adamaKomi/regodrill/releases) (Linux, macOS and Windows, amd64 and arm64),
+check it against `checksums.txt`, and put `regodrill` on your `PATH`. A `wasip1` build is attached too, for
+environments that can only run WebAssembly.
+
+**With Go** 1.27.2 or later:
+
+```console
+$ go install github.com/adamaKomi/regodrill/cmd/regodrill@latest
+$ regodrill version
+```
+
+**From source**:
 
 ```console
 $ git clone https://github.com/adamaKomi/regodrill.git
 $ cd regodrill
 $ go build -o bin/regodrill ./cmd/regodrill
-$ ./bin/regodrill run path/to/policies
 ```
+
+In VS Code, the [Rego Syntax Support](https://marketplace.visualstudio.com/items?itemName=AdamaKomi.rego-syntax-support)
+extension runs it from the editor (its next version).
 
 ## Usage
 
@@ -255,7 +269,7 @@ The full design is in the [specification](https://github.com/adamaKomi/rego-synt
 |---|---|
 | **M0 Spike** (done, decision: go) | Engine, 3 operators, test selection, text and JSON output, measures on gatekeeper-library |
 | **M1 CLI MVP** (done except `LOGIC_SWAP`) | 10 of 11 operators, `# regodrill:ignore` annotations, `.regodrill.yaml`, SARIF output, `--threshold`, `--since <git ref>`, network built-ins off by default |
-| M2 Release | Binaries for Linux, macOS and Windows, `go install`, v0.1.0 |
+| **M2 Release** (v0.1.0) | Binaries for Linux, macOS and Windows, `go install` |
 | M3 VS Code | Survivors as diagnostics in the [Rego Syntax Support](https://marketplace.visualstudio.com/items?itemName=AdamaKomi.rego-syntax-support) extension |
 | M4 GitHub Action | Mutation testing of the lines changed by a pull request, results in code scanning |
 

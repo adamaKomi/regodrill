@@ -3,9 +3,9 @@
 All notable changes to regodrill. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.1.0] - 2026-11-03
 
-First version. Not released yet.
+First version.
 
 ### Added
 
@@ -28,3 +28,5 @@ First version. Not released yet.
 - Safety: `http.send` and `net.lookup_ip_addr` are off unless `--allow-network`; the baseline runs twice
   and stops on unstable tests; a mutant that runs too long is a timeout. Hints for Rego v0 without
   `--v0-compatible`, custom built-ins, and data files that conflict.
+
+[0.1.0]: https://github.com/adamaKomi/regodrill/releases/tag/v0.1.0
