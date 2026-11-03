@@ -1,0 +1,9 @@
+exit 0
+policy.rego:5:19 NOT_TOGGLE data.elseoneline.tier "" -> "not " killed by data.elseoneline_test.test_bronze
+policy.rego:5:32 COMP_BOUNDARY data.elseoneline.tier ">=" -> ">" killed by data.elseoneline_test.test_gold_at_100
+policy.rego:5:35 CONST_NUMBER data.elseoneline.tier "100" -> "101" killed by data.elseoneline_test.test_gold_at_100
+policy.rego:5:35 CONST_NUMBER data.elseoneline.tier "100" -> "99" survived
+policy.rego:5:59 NOT_TOGGLE data.elseoneline.tier "" -> "not " killed by data.elseoneline_test.test_bronze
+policy.rego:5:72 COMP_BOUNDARY data.elseoneline.tier ">=" -> ">" killed by data.elseoneline_test.test_silver_at_50
+policy.rego:5:75 CONST_NUMBER data.elseoneline.tier "50" -> "51" killed by data.elseoneline_test.test_silver_at_50
+policy.rego:5:75 CONST_NUMBER data.elseoneline.tier "50" -> "49" survived
