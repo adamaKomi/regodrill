@@ -99,7 +99,8 @@ $ go build -o bin/regodrill ./cmd/regodrill
 ```
 
 In VS Code, the [Rego Syntax Support](https://marketplace.visualstudio.com/items?itemName=AdamaKomi.rego-syntax-support)
-extension runs it from the editor (its next version).
+extension (0.3.0 or later) runs it from the editor: survivors as diagnostics, a quick fix to ignore one, and
+a per-rule summary (with regodrill 0.2.0 or later).
 
 ## Usage
 
@@ -270,7 +271,7 @@ The full design is in the [specification](https://github.com/adamaKomi/rego-synt
 | **M0 Spike** (done, decision: go) | Engine, 3 operators, test selection, text and JSON output, measures on gatekeeper-library |
 | **M1 CLI MVP** (done except `LOGIC_SWAP`) | 10 of 11 operators, `# regodrill:ignore` annotations, `.regodrill.yaml`, SARIF output, `--threshold`, `--since <git ref>`, network built-ins off by default |
 | **M2 Release** (done, v0.1.0) | Binaries for Linux, macOS and Windows, `go install` |
-| M3 VS Code | Survivors as diagnostics in the [Rego Syntax Support](https://marketplace.visualstudio.com/items?itemName=AdamaKomi.rego-syntax-support) extension |
+| **M3 VS Code** (done, extension 0.3.0) | Survivors as diagnostics in the [Rego Syntax Support](https://marketplace.visualstudio.com/items?itemName=AdamaKomi.rego-syntax-support) extension |
 | M4 GitHub Action | Mutation testing of the lines changed by a pull request, results in code scanning |
 
 regodrill is deterministic and uses no AI: the same policy and tests always give the same report, so it can
