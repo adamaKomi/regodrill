@@ -1,0 +1,7 @@
+exit 3
+stderr: error: mutation score 50.0 % is below the threshold of 90 %
+policies/authz.rego:4:2 EXPR_REMOVE data.authz.allow "input.age >= 18" -> "" killed by data.authz_test.test_minor
+policies/authz.rego:4:12 COMP_BOUNDARY data.authz.allow ">=" -> ">" ignored: age is an integer, and 17 is tested
+policies/authz.rego:4:15 CONST_NUMBER data.authz.allow "18" -> "19" survived
+policies/authz.rego:4:15 CONST_NUMBER data.authz.allow "18" -> "17" killed by data.authz_test.test_minor
+policies/authz.rego:5:2 EXPR_REMOVE data.authz.allow "input.active" -> "" survived

@@ -1,7 +1,7 @@
 # Spike M0: first measures
 
 Date: 2026-11-02. Specification: §14 of
-[mutation-testing-spec.md](https://github.com/adamaKomi/rego-lens/blob/main/docs/mutation-testing-spec.md#14-spike-before-committing-to-the-mvp).
+[mutation-testing-spec.md](https://github.com/adamaKomi/rego-syntax-support/blob/main/docs/mutation-testing-spec.md#14-spike-before-committing-to-the-mvp).
 
 ## Setup
 
@@ -121,7 +121,11 @@ keep WASM as a fallback for environments without them (VS Code for the Web).
   helper files were mutated, parse errors exited with 1 instead of 2, and a run without tests reported
   success.
 
-The specification was updated accordingly (v0.3, rego-lens PR #8).
+The specification was updated accordingly (v0.3, rego-syntax-support PR #8).
+
+## Decision: go
+
+Taken by the maintainer on 2026-11-03, on the recommendation below. Milestone M1 (the CLI MVP) starts.
 
 ## Recommendation: go
 

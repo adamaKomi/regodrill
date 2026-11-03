@@ -1,0 +1,5 @@
+exit 0
+policy.rego:9:2 EXPR_REMOVE data.builtins.long_name "is_string(input.name)" -> "" survived
+policy.rego:10:2 EXPR_REMOVE data.builtins.long_name "count(input.name) > 3" -> "" survived
+policy.rego:15:2 EXPR_REMOVE data.builtins.long_label "is_string(input.label)" -> "" killed by data.builtins_test.test_label_list
+policy.rego:16:2 EXPR_REMOVE data.builtins.long_label "count(input.label) > 3" -> "" survived

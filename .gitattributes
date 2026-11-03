@@ -1,2 +1,6 @@
+# Fixtures and expected outputs compare exact text: keep LF on every platform (Windows runners convert to
+# CRLF by default).
+* text=auto eol=lf
+
 # This fixture checks CRLF line endings: never normalize it.
 testdata/scenarios/line-endings-and-unicode/policy.rego -text

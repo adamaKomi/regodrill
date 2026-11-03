@@ -1,0 +1,8 @@
+exit 0
+policy.rego:4:30 COLLECTION_DROP data.collections.privileged "\"admin\"," -> "" killed by data.collections_test.test_admin
+policy.rego:4:37 COLLECTION_DROP data.collections.privileged ", \"owner\"" -> "" survived
+policy.rego:7:19 COLLECTION_DROP data.collections.allowed_ports "80," -> "" survived
+policy.rego:7:23 COLLECTION_DROP data.collections.allowed_ports "443," -> "" killed by data.collections_test.test_https
+policy.rego:7:26 COLLECTION_DROP data.collections.allowed_ports ", 8080" -> "" survived
+policy.rego:13:2 COLLECTION_DROP data.collections.teams "\"blue\"," -> "" killed by data.collections_test.test_teams
+policy.rego:13:8 COLLECTION_DROP data.collections.teams ", \"red\"" -> "" killed by data.collections_test.test_teams

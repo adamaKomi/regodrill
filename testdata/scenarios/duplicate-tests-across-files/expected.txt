@@ -1,0 +1,4 @@
+exit 0
+policy.rego:4:2 EXPR_REMOVE data.dup.allow "input.level > 3" -> "" killed by data.dup_test.test_level
+policy.rego:4:14 COMP_BOUNDARY data.dup.allow ">" -> ">=" killed by data.dup_test.test_level
+policy.rego:5:2 EXPR_REMOVE data.dup.allow "input.active" -> "" survived

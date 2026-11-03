@@ -1,0 +1,11 @@
+version: 1
+paths: [policies]
+exclude: ["policies/vendor/**"]
+threshold: 90
+operators:
+  exclude: [CONST_STRING, NOT_TOGGLE, COMP_NEGATE]
+ignore:
+  - file: policies/authz.rego
+    line: 4
+    operator: COMP_BOUNDARY
+    reason: "age is an integer, and 17 is tested"

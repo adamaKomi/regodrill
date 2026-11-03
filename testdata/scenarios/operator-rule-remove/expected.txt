@@ -1,0 +1,8 @@
+exit 0
+more.rego:4:1 RULE_REMOVE data.ruleremove.allow "allow if input.role == \"auditor\"" -> "" killed by data.ruleremove_test.test_auditor
+policy.rego:3:1 RULE_REMOVE data.ruleremove.allow "allow if input.role == \"admin\" # removed: kille..." -> "" killed by data.ruleremove_test.test_admin
+policy.rego:5:1 RULE_REMOVE data.ruleremove.allow "allow if input.role == \"owner\" # removed: no co..." -> "" no_coverage
+policy.rego:7:1 RULE_REMOVE data.ruleremove.deny "deny contains \"no owner\" if not input.owner # r..." -> "" killed by data.ruleremove_test.test_reasons
+policy.rego:9:1 RULE_REMOVE data.ruleremove.deny "deny contains \"too big\" if input.size > 10 # re..." -> "" killed by data.ruleremove_test.test_reasons
+policy.rego:12:1 RULE_REMOVE data.ruleremove.size_class "size_class(n) := \"small\" if n < 5" -> "" killed by data.ruleremove_test.test_small
+policy.rego:14:1 RULE_REMOVE data.ruleremove.size_class "size_class(n) := \"large\" if n >= 5" -> "" survived

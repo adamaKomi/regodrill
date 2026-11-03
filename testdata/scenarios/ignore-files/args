@@ -1,0 +1,3 @@
+# The same layout, with the manifests skipped by name, like opa test --ignore.
+--ignore=*.yaml
+--operators=COMP_BOUNDARY

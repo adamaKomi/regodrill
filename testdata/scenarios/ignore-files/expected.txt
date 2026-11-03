@@ -1,0 +1,2 @@
+exit 0
+policy.rego:3:24 COMP_BOUNDARY data.manifests.deny ">" -> ">=" killed by data.manifests_test.test_five_allowed

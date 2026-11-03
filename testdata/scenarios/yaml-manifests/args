@@ -1,0 +1,2 @@
+# Two Kubernetes manifests in one directory: as data they conflict (merge error), exit code 2 with a hint.
+--operators=COMP_BOUNDARY

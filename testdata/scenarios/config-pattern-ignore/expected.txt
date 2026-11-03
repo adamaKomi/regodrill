@@ -1,0 +1,8 @@
+exit 0
+stderr: warning: regodrill.yaml (ignore entry 2): ignore matches no mutant on lines matching `input\.review\.operation == "DELETE"` (any operator)
+policy.rego:4:2 EXPR_REMOVE data.lb.violation "input.review.kind.kind == \"Service\"" -> "" ignored: Gatekeeper's match filters the kind
+policy.rego:4:25 COMP_NEGATE data.lb.violation "==" -> "!=" ignored: Gatekeeper's match filters the kind
+policy.rego:4:28 CONST_STRING data.lb.violation "\"Service\"" -> "\"Service_regodrill\"" ignored: Gatekeeper's match filters the kind
+policy.rego:5:2 EXPR_REMOVE data.lb.violation "input.review.object.spec.type == \"LoadBalancer\"" -> "" killed by data.lb_test.test_node_port
+policy.rego:5:32 COMP_NEGATE data.lb.violation "==" -> "!=" killed by data.lb_test.test_load_balancer
+policy.rego:5:35 CONST_STRING data.lb.violation "\"LoadBalancer\"" -> "\"LoadBalancer_regodrill\"" killed by data.lb_test.test_load_balancer

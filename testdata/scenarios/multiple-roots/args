@@ -1,3 +1,5 @@
 # Policies and tests in separate trees, given as two paths.
 policies
 tests
+# Written for the first three operators.
+--operators=COMP_BOUNDARY,EXPR_REMOVE,DEFAULT_FLIP

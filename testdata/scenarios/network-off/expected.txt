@@ -1,0 +1,3 @@
+exit 2
+stderr: error: baseline: 1 error occurred: policy.rego:7: rego_type_error: undefined function http.send
+stderr: hint: the policy calls http.send, which regodrill disables by default so that mutants cannot send requests; run with --allow-network

@@ -10,4 +10,6 @@ test_annotation if {
 
 test_title if stillborn.title == "t" with input as {"title": "t"}
 
+test_files if stillborn.files == {"f.json"} with input as {"a": true, "b": true}
+
 test_level if stillborn.level == 3 with input as {"level": 3}

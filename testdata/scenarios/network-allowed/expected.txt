@@ -1,0 +1,5 @@
+exit 0
+policy.rego:6:75 CONST_NUMBER data.network.remote_ok "200" -> "201" no_coverage
+policy.rego:6:75 CONST_NUMBER data.network.remote_ok "200" -> "199" no_coverage
+policy.rego:9:20 CONST_NUMBER data.network.small "3" -> "4" survived
+policy.rego:9:20 CONST_NUMBER data.network.small "3" -> "2" killed by data.network_test.test_small_2

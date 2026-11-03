@@ -1,0 +1,3 @@
+# Paths, exclusions, operators, ignores and the threshold all come from the configuration file.
+--config={dir}/.regodrill.yaml
+(no paths)

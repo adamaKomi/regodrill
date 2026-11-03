@@ -1,0 +1,7 @@
+exit 0
+policy.rego:4:35 CONST_NUMBER data.constnum.quota_ok "10" -> "11" killed by data.constnum_test.test_eleven_items
+policy.rego:4:35 CONST_NUMBER data.constnum.quota_ok "10" -> "9" killed by data.constnum_test.test_ten_items
+policy.rego:7:21 CONST_NUMBER data.constnum.min_ok "-2" -> "-1" killed by data.constnum_test.test_minus_one
+policy.rego:7:21 CONST_NUMBER data.constnum.min_ok "-2" -> "-3" survived
+policy.rego:10:24 CONST_NUMBER data.constnum.https "443" -> "444" killed by data.constnum_test.test_https
+policy.rego:10:24 CONST_NUMBER data.constnum.https "443" -> "442" killed by data.constnum_test.test_https

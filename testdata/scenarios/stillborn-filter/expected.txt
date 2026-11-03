@@ -4,6 +4,8 @@ policy.rego:7:11 COMP_BOUNDARY data.stillborn.title ">" -> ">=" survived
 policy.rego:11:2 EXPR_REMOVE data.stillborn.label "key := input.key" -> "" killed by data.stillborn_test.test_label
 policy.rego:12:2 EXPR_REMOVE data.stillborn.label "guard := input.guard" -> "" survived
 policy.rego:17:2 EXPR_REMOVE data.stillborn.annotation "name := input.default_name" -> "" killed by data.stillborn_test.test_annotation
-policy.rego:22:2 EXPR_REMOVE data.stillborn.level "l = input.level" -> "" stillborn: 1 error occurred: policy.rego:23: rego_unsafe_var_error: var l is unsafe
 policy.rego:23:2 EXPR_REMOVE data.stillborn.level "l > 0" -> "" survived
 policy.rego:23:4 COMP_BOUNDARY data.stillborn.level ">" -> ">=" survived
+policy.rego:29:1 RULE_REMOVE data.stillborn.profiles "profiles contains {\"type\": \"a\"} if input.a" -> "" survived
+policy.rego:31:1 RULE_REMOVE data.stillborn.profiles "profiles contains {\"type\": \"b\", \"file\": \"f.json..." -> "" stillborn: 1 error occurred: policy.rego:32: rego_type_error: undefined ref: p.file
+policy.rego:35:2 EXPR_REMOVE data.stillborn.files "p.type == \"b\"" -> "" survived

@@ -5,6 +5,6 @@ checks.small if count(input.items) < 5 # < → <= killed by test_five_items
 
 # The rule looked up depends on a variable: data.dynamic.checks[name].
 failed contains name if {
-	some name in ["has_owner", "small"]
+	some name in ["has_owner", "small"] # no mutant: `not checks[name]` cannot bind name
 	not checks[name] # killed by test_all_pass
 }

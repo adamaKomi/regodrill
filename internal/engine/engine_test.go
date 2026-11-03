@@ -2,10 +2,15 @@ package engine
 
 import (
 	"context"
+	"errors"
+	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/open-policy-agent/opa/v1/ast"
+	"github.com/open-policy-agent/opa/v1/tester"
+	"github.com/open-policy-agent/opa/v1/topdown"
 
 	"github.com/adamaKomi/regodrill/internal/mutate"
 	"github.com/adamaKomi/regodrill/internal/project"
@@ -45,7 +50,8 @@ func TestBaselineNamesDuplicateTestsLikeTheRunner(t *testing.T) {
 func TestBaselineCoverageAndReach(t *testing.T) {
 	_, b := baseline(t, "../../testdata/scenarios/indexed-rule-and-duplicate-tests")
 	// Line 7 (input.type == "LoadBalancer") is evaluated only when the indexed input matches.
-	if got, want := b.CoveringTests("../../testdata/scenarios/indexed-rule-and-duplicate-tests/policy.rego", 7), []string{"data.svc_test.test_load_balancer_denied"}; !slices.Equal(got, want) {
+	file := filepath.FromSlash("../../testdata/scenarios/indexed-rule-and-duplicate-tests/policy.rego")
+	if got, want := b.CoveringTests(file, 7), []string{"data.svc_test.test_load_balancer_denied"}; !slices.Equal(got, want) {
 		t.Errorf("covering tests of line 7 = %q, want %q", got, want)
 	}
 	// All three tests look the rule up.
@@ -88,6 +94,58 @@ func TestSelectionIsSound(t *testing.T) {
 		}
 		if m.Rule != "data.svc.deny" {
 			t.Errorf("line %d: rule = %q, want data.svc.deny", m.Line, m.Rule)
+		}
+	}
+}
+
+// A test that passes, then fails on the unmodified policy (time, randomness) stops the run: its failures on
+// mutants would be false kills.
+func TestUnstableBaseline(t *testing.T) {
+	p, err := project.Load([]string{"../../testdata/authz"}, ast.RegoV1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	calls := 0
+	testRunner = func(ctx context.Context, p *project.Project, mods map[string]*ast.Module, filter string, tracer topdown.QueryTracer) ([]*tester.Result, error) {
+		results, err := runTests(ctx, p, mods, filter, tracer)
+		calls++
+		if calls == 2 {
+			for _, r := range results {
+				if r.Name == "test_minor_denied" {
+					r.Fail = true
+				}
+			}
+		}
+		return results, err
+	}
+	defer func() { testRunner = runTests }()
+
+	_, err = RunBaseline(context.Background(), p)
+	var be *BaselineError
+	if !errors.As(err, &be) || !be.Unstable || !slices.Equal(be.Failures, []string{"data.authz_test.test_minor_denied"}) {
+		t.Fatalf("got %v, want an unstable-test error naming test_minor_denied", err)
+	}
+	if !strings.Contains(err.Error(), "unstable tests") {
+		t.Errorf("message %q", err)
+	}
+}
+
+// The fast path (fastrun.go) runs plain tests; a project with a parameterized test uses OPA's runner, and a
+// test name defined in two files turns test selection off.
+func TestRunPathChoice(t *testing.T) {
+	cases := []struct {
+		dir             string
+		fast, ambiguous bool
+	}{
+		{"../../testdata/authz", true, false},
+		{"../../testdata/scenarios/indexed-rule-and-duplicate-tests", true, false}, // duplicates in one file
+		{"../../testdata/scenarios/parameterized-tests", false, false},
+		{"../../testdata/scenarios/duplicate-tests-across-files", true, true},
+	}
+	for _, c := range cases {
+		_, b := baseline(t, c.dir)
+		if b.fast != c.fast || b.ambiguousNames != c.ambiguous {
+			t.Errorf("%s: fast %v, ambiguous %v; want %v, %v", c.dir, b.fast, b.ambiguousNames, c.fast, c.ambiguous)
 		}
 	}
 }
