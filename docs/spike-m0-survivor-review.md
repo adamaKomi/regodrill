@@ -1,6 +1,6 @@
 # Spike M0: manual review of 50 survivors
 
-Criterion 4 of the spike ([spec §14](https://github.com/adamaKomi/rego-lens/blob/main/docs/mutation-testing-spec.md#14-spike-before-committing-to-the-mvp)):
+Criterion 4 of the spike ([spec §14](https://github.com/adamaKomi/rego-syntax-support/blob/main/docs/mutation-testing-spec.md#14-spike-before-committing-to-the-mvp)):
 at least 50 % of the surviving mutants should be real test gaps.
 
 ## Method
