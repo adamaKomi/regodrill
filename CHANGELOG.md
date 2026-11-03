@@ -5,6 +5,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-03
+
 ### Added
 
 - `regodrill check`: parses and compiles Rego files like `opa check` of the same OPA version, with the same
@@ -61,6 +63,7 @@ First version.
   and stops on unstable tests; a mutant that runs too long is a timeout. Hints for Rego v0 without
   `--v0-compatible`, custom built-ins, and data files that conflict.
 
-[Unreleased]: https://github.com/adamaKomi/regodrill/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/adamaKomi/regodrill/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/adamaKomi/regodrill/releases/tag/v0.3.0
 [0.2.0]: https://github.com/adamaKomi/regodrill/releases/tag/v0.2.0
 [0.1.0]: https://github.com/adamaKomi/regodrill/releases/tag/v0.1.0
