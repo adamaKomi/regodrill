@@ -3,6 +3,19 @@
 All notable changes to regodrill. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- `ruleLine` in the JSON report: the line where the mutant's rule definition starts, so editors can show a
+  summary per definition.
+
+### Fixed
+
+- One-line `else` clauses without braces (`else := 2 if input.c >= 4`) are mutated like other bodies. OPA
+  gives such a body the location of the whole clause, so their comparisons and constants were skipped, and
+  `NOT_TOGGLE` produced a stillborn mutant there.
+
 ## [0.1.0] - 2026-11-03
 
 First version.

@@ -48,6 +48,9 @@ type Mutant struct {
 	// Every definition of the same rule, including its default and else branches, shares this path.
 	Rule    string  `json:"rule"`
 	RuleRef ast.Ref `json:"-"`
+	// RuleLine is the line where the enclosing definition starts: each definition of an incremental rule,
+	// function or else chain has its own. Editors group mutants by it (a CodeLens per definition).
+	RuleLine int `json:"ruleLine"`
 	// Range is the replaced text, end exclusive. An insertion has an empty range.
 	Range Range `json:"range"`
 }
@@ -140,6 +143,8 @@ type generator struct {
 	file    *project.File
 	enabled map[string]bool
 	rule    ast.Ref // path of the rule being visited
+	// ruleLine is the 1-based line where the definition being visited starts (its head).
+	ruleLine int
 	// globals are the names a rule body can use without binding them: the rules of the file's package (in
 	// every file of the package) and the file's imports.
 	globals map[ast.Var]bool
@@ -150,6 +155,7 @@ type generator struct {
 func (g *generator) eachRule(fn func(*ast.Rule)) {
 	for _, rule := range g.file.Module.Rules {
 		g.rule = rule.Path()
+		g.ruleLine = rule.Location.Row
 		fn(rule)
 	}
 	g.rule = nil
@@ -164,7 +170,7 @@ func (g *generator) insert(op string, offset int, text string) {
 	g.mutants = append(g.mutants, &Mutant{
 		Operator: op, File: g.file.Path, Line: line, Column: col,
 		Start: offset, End: offset, Original: "", Replacement: text,
-		Rule: g.rule.String(), RuleRef: g.rule,
+		Rule: g.rule.String(), RuleRef: g.rule, RuleLine: g.ruleLine,
 		Range: Range{Position{line, col}, Position{line, col}},
 	})
 }
@@ -178,7 +184,7 @@ func (g *generator) add(op string, start, end int, replacement string) {
 	g.mutants = append(g.mutants, &Mutant{
 		Operator: op, File: g.file.Path, Line: line, Column: col,
 		Start: start, End: end, Original: g.file.Source[start:end], Replacement: replacement,
-		Rule: g.rule.String(), RuleRef: g.rule,
+		Rule: g.rule.String(), RuleRef: g.rule, RuleLine: g.ruleLine,
 		Range: Range{Position{line, col}, Position{endLine, endCol}},
 	})
 }

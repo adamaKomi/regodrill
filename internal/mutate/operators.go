@@ -213,6 +213,7 @@ func (g *generator) ruleRemove(definitions map[string]int) {
 			continue
 		}
 		g.rule = rule.Path()
+		g.ruleLine = rule.Location.Row
 		if definitions[g.rule.String()] < 2 {
 			continue
 		}
@@ -468,6 +469,9 @@ func (g *generator) ownExpr(e *ast.Expr) bool {
 		return false
 	}
 	end := e.Location.Offset + len(e.Location.Text)
+	if strings.HasPrefix(string(e.Location.Text), "else") {
+		return false // a one-line else body whose location is still the whole clause (see project.fixElseLocations)
+	}
 	return end <= len(g.file.Source) && g.file.Source[e.Location.Offset:end] == string(e.Location.Text)
 }
 

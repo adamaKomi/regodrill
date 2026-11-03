@@ -50,6 +50,7 @@ scenario stays about what it was written for.
 | Scenario | What it checks |
 |---|---|
 | `else-chain` | Mutations inside `else` branches |
+| `else-one-line` | One-line `else` clauses without braces, whose body OPA locates at the whole clause: regodrill re-locates it, so comparisons and constants are mutated and `not` lands on the expression |
 | `functions` | Function bodies; two definitions of one function, where a mutant causes a conflict error or an undefined result |
 | `ref-head-rules` | Rules with ref heads (`checks.labels.present`), a variable in the head (`roles[name]`) |
 | `iteration` | `every` bodies, comprehensions, `some ... in`; removing a binding is stillborn |

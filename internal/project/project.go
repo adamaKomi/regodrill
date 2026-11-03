@@ -103,6 +103,7 @@ func Load(paths []string, version ast.RegoVersion, ignore ...string) (*Project, 
 	}
 	p := &Project{RegoVersion: version, Store: inmem.NewFromObject(res.Documents), Capabilities: offlineCapabilities()}
 	for _, f := range res.Modules {
+		fixElseLocations(f.Parsed, version)
 		// f.Name is the path as given, which the parsed locations use. The map key is not: the loader drops
 		// the leading "/" of an absolute path there.
 		p.Files = append(p.Files, &File{
@@ -148,7 +149,11 @@ func hasParseError(err error) bool {
 
 // Parse parses one module with the project's Rego version and the loader's options.
 func (p *Project) Parse(path, src string) (*ast.Module, error) {
-	return ast.ParseModuleWithOpts(path, src, ast.ParserOptions{RegoVersion: p.RegoVersion, ProcessAnnotation: true})
+	mod, err := ast.ParseModuleWithOpts(path, src, ast.ParserOptions{RegoVersion: p.RegoVersion, ProcessAnnotation: true})
+	if err == nil {
+		fixElseLocations(mod, p.RegoVersion)
+	}
+	return mod, err
 }
 
 // Modules returns the parsed modules keyed by path, as the OPA test runner expects them.
